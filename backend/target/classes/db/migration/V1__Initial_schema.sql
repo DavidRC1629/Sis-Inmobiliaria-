@@ -13,10 +13,13 @@ CREATE TABLE IF NOT EXISTS roles (
 -- Tabla de usuarios
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL,
+    username VARCHAR(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    email VARCHAR(100) NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL,
     role_id BIGINT NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_users_username UNIQUE (username),
     CONSTRAINT uk_users_email UNIQUE (email),
@@ -36,6 +39,6 @@ ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 -- Insertar usuario admin inicial (password: admin123)
 -- Contraseña hasheada con BCrypt: admin123
-INSERT INTO users (username, password, email, role_id) VALUES 
-    ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin@sisarovi.com', 1)
+INSERT INTO users (username, password, first_name, last_name, email, role_id, enabled) VALUES 
+    ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Admin', 'Sistema', 'admin@sisarovi.com', 1, TRUE)
 ON DUPLICATE KEY UPDATE username = VALUES(username);

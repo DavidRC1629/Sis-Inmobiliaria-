@@ -22,5 +22,4 @@ com\sisarovi\inmobiliario\dto\LoginRequest.class
 com\sisarovi\inmobiliario\controller\AuthController.class
 com\sisarovi\inmobiliario\dto\LoginRequest$LoginRequestBuilder.class
 com\sisarovi\inmobiliario\InmobiliarioApplication.class
-com\sisarovi\inmobiliario\config\DataInitializer.class
 com\sisarovi\inmobiliario\controller\UserController.class

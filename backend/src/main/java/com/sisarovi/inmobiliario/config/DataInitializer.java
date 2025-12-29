@@ -29,13 +29,11 @@ public class DataInitializer implements CommandLineRunner {
             Role adminRole = Role.builder()
                     .id(1L)
                     .name("ROLE_ADMIN")
-                    .description("Administrador del sistema con acceso completo")
                     .build();
 
             Role userRole = Role.builder()
                     .id(2L)
                     .name("ROLE_USER")
-                    .description("Usuario estándar con acceso limitado")
                     .build();
 
             roleRepository.save(adminRole);
