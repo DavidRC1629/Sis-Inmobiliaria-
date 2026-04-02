@@ -46,19 +46,20 @@ public class DataInitializer implements CommandLineRunner {
                 log.info("Creando usuario 'Admin Maestro'...");
 
                 User adminUser = User.builder()
-                        .username("admin")
+                        .dni("admin")
                         .password(passwordEncoder.encode("admin123"))
-                        .firstName("Admin")
-                        .lastName("Maestro")
-                        .email("admin@sisarovi.com")
+                        .nombres("Admin")
+                        .primerApellido("Maestro")
+                        .segundoApellido("")
                         .role(adminRole)
+                        .estado(com.sisarovi.inmobiliario.entity.UserStatus.ACTIVO)
                         .enabled(true)
                         .build();
 
                 userRepository.save(adminUser);
 
                 log.info("Usuario Admin Maestro creado exitosamente");
-                log.info("Credenciales - Username: admin, Password: admin123");
+                log.info("Credenciales - DNI: admin, Password: admin123");
             }
         } else {
             log.info("La base de datos ya contiene datos. Omitiendo inicialización.");

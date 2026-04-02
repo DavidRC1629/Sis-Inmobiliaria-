@@ -24,24 +24,28 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String username;
+    @Column(nullable = false, unique = true, length = 8)
+    private String dni;
 
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false, length = 100)
-    private String firstName;
+    private String nombres;
 
     @Column(nullable = false, length = 100)
-    private String lastName;
+    private String primerApellido;
 
-    @Column(unique = true, length = 150)
-    private String email;
+    @Column(length = 100)
+    private String segundoApellido;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserStatus estado = UserStatus.PENDIENTE;
 
     @Column(nullable = false)
     private boolean enabled = true;
@@ -58,7 +62,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
+        return dni;
     }
 
     @Override

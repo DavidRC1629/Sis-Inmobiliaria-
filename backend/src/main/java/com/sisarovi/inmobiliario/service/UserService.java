@@ -49,11 +49,12 @@ public class UserService {
     private UserResponse mapToUserResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
-                .username(user.getUsername())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
+                .dni(user.getDni())
+                .nombres(user.getNombres())
+                .primerApellido(user.getPrimerApellido())
+                .segundoApellido(user.getSegundoApellido())
                 .role(user.getRole().getName())
+                .estado(user.getEstado() != null ? user.getEstado().name() : null)
                 .enabled(user.isEnabled())
                 .build();
     }

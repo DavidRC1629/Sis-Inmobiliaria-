@@ -1,0 +1,3 @@
+ALTER TABLE users ADD COLUMN IF NOT EXISTS nombres VARCHAR(100) NULL;
+UPDATE users SET nombres = username WHERE nombres IS NULL;
+ALTER TABLE users ALTER COLUMN nombres SET NOT NULL;

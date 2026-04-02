@@ -1,19 +1,105 @@
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\service\UserService.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\service\JwtService.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\dto\RegisterRequest.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\config\JwtAuthenticationFilter.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\repository\UserRepository.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\config\ApplicationConfig.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\controller\AuthController.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\dto\AuthResponse.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\service\AuthService.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\repository\RoleRepository.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\dto\UserResponse.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\InmobiliarioApplication.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\config\SecurityConfig.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\dto\ChangeRoleRequest.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\entity\Role.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\controller\UserController.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\config\DataInitializer.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\dto\LoginRequest.java
-C:\Users\david\Videos\SisArovi\backend\src\main\java\com\sisarovi\inmobiliario\entity\User.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\config\ApplicationConfig.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\config\AuditTrailInterceptor.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\config\DataInitializer.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\config\JwtAuthenticationFilter.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\config\SecurityConfig.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\config\WebMvcAuditConfig.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\AdminController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\AppSettingController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\AuthController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\ClienteController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\CronogramaController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\EtapaController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\LoteController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\LotePorManzanaController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\ManzanaController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\ParcelaController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\ProformaController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\ProjectController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\RegistroAuditoriaController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\ReniecController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\TerrenoPropioController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\controller\UserController.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\AdquisicionTerrenoRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\AuthResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ChangeRoleRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ClienteAdquisicionRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ClienteLoteOptionResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ClienteProjectSummaryResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ClienteRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ClienteResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\CronogramaContratoResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\CronogramaCuotaResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\CronogramaDescuentoRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\CronogramaFilterRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\CronogramaPagoCuotaResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\DeleteUserRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ErrorResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\EtapaRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\EtapaResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\LoginRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\LoteRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\LoteResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ParcelaRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ParcelaResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ProformaRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ProformaResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ProjectRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\ProjectResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\PropietarioRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\RegisterRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\RegistrarPagoRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\TerrenoPropioRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\TerrenoPropioResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\UserPendingResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\UserResponse.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\dto\UserStatusRequest.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\AppSetting.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\Cliente.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\CronogramaContrato.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\CronogramaCuota.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\CronogramaPagoCuota.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\CronogramaPagoSeparacion.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\Etapa.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\Lote.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\Manzana.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\Parcela.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\Proforma.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\Project.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\RegistroAuditoria.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\Role.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\TerrenoPropio.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\User.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\entity\UserStatus.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\exception\GlobalExceptionHandler.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\InmobiliarioApplication.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\AppSettingRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\ClienteRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\CronogramaContratoRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\CronogramaCuotaRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\CronogramaPagoSeparacionRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\EtapaRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\LoteRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\ManzanaRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\ParcelaRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\ProformaRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\ProjectRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\RegistroAuditoriaRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\RoleRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\TerrenoPropioRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\repository\UserRepository.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\AdminService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\AppSettingService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\AuthService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\ClienteService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\CronogramaService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\DniApiService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\EtapaService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\JwtService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\LoteService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\ParcelaService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\ProformaService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\ProjectService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\RegistroAuditoriaService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\TerrenoPropioService.java
+c:\Users\david\Videos\SisArovi - copia\backend\src\main\java\com\sisarovi\inmobiliario\service\UserService.java
