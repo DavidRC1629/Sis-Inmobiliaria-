@@ -1,0 +1,144 @@
+<!-- Navbar -->
+<div class="navbar">
+  <div class="navbar-content">
+    <button class="back-button" (click)="goBack()">
+      ⬅️ Volver a Etapas
+    </button>
+    <h1>🏞️ Gestión de Parcelas</h1>
+    <button class="create-button" (click)="openCreateModal()">
+      ➕ Nueva Parcela
+    </button>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- Parcelas Grid -->
+  <div *ngIf="!loading" class="parcelas-grid">
+    <div *ngFor="let parcela of parcelas; trackBy: trackByParcelaId" class="parcela-card">
+      <div class="card-header">
+        <h3>{{ parcela.nombre }}</h3>
+      </div>
+      
+      <div class="card-body">
+        <div class="info-row">
+          <span class="label">🏘️ Manzanas:</span>
+          <span class="value">{{ parcela.numManzanas }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label"> Propietario:</span>
+          <span class="value">{{ parcela.propietario }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">📊 Núm. Lotes:</span>
+          <span class="value">{{ parcela.cantidadLotes || 0 }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">✅ Lotes Disponibles:</span>
+          <span class="value">{{ parcela.lotesDisponibles || 0 }}</span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="view-button" (click)="viewLotes(parcela)">
+          🏠 Ver Lotes
+        </button>
+        <button class="edit-button" (click)="openEditModal(parcela)">
+          ✏️ Editar
+        </button>
+        <button class="delete-button" (click)="deleteParcela(parcela)">
+          🗑️ Eliminar
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="parcelas.length === 0" class="empty-state">
+      <div class="empty-icon">🏞️</div>
+      <h3>No hay parcelas registradas</h3>
+      <p>Comienza creando tu primera parcela</p>
+      <button class="create-button" (click)="openCreateModal()">
+        ➕ Crear Primera Parcela
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modalTitle }}</h2>
+      <button class="close-button" (click)="closeModal()">✖</button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="nombre">Nombre de la Parcela *</label>
+        <input
+          type="text"
+          id="nombre"
+          name="nombre"
+          [(ngModel)]="formData.nombre"
+          [class.error]="formErrors.nombre"
+          placeholder="Ej: Parcela Norte, Sector A, etc."
+          required
+        />
+        <span class="error-message" *ngIf="formErrors.nombre">{{ formErrors.nombre }}</span>
+      </div>
+
+      <div class="form-group">
+        <label for="numManzanas">Número de Manzanas (1-27) *</label>
+        <input
+          type="number"
+          id="numManzanas"
+          name="numManzanas"
+          [(ngModel)]="formData.numManzanas"
+          [class.error]="formErrors.numManzanas"
+          (input)="onManzanasInput($event)"
+          min="1"
+          max="27"
+          required
+        />
+        <span class="error-message" *ngIf="formErrors.numManzanas">{{ formErrors.numManzanas }}</span>
+        <div class="manzanas-preview" *ngIf="formData.numManzanas > 0 && formData.numManzanas <= 27">
+          <strong>Manzanas:</strong> {{ getManzanasText() }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="propietario">Propietario *</label>
+        <input
+          type="text"
+          id="propietario"
+          name="propietario"
+          [(ngModel)]="formData.propietario"
+          [class.error]="formErrors.propietario"
+          placeholder="Nombre del propietario"
+          required
+        />
+        <span class="error-message" *ngIf="formErrors.propietario">{{ formErrors.propietario }}</span>
+      </div>
+
+      <div class="error-message general" *ngIf="formErrors.general">
+        {{ formErrors.general }}
+      </div>
+   
+      <div class="modal-actions">
+        <button type="button" class="cancel-button" (click)="closeModal()">
+          Cancelar
+        </button>
+        <button type="submit" class="submit-button" [disabled]="loading">
+          <span *ngIf="!loading">{{ modalMode === 'create' ? '✅ Crear' : '💾 Guardar' }}</span>
+          <span *ngIf="loading">⏳ Procesando...</span>
+        </button>
+      </div>
+      
+    </form>
+  </div>
+</div>

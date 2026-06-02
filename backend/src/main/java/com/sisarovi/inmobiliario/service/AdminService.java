@@ -13,11 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class AdminService {
+
+    private static final Duration REJECTION_COOLDOWN = Duration.ofHours(12);
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -53,7 +56,7 @@ public class AdminService {
         }
         
         user.setEstado(UserStatus.RECHAZADO);
-        user.setRejectionExpiresAt(LocalDateTime.now().plusDays(5));
+        user.setRejectionExpiresAt(LocalDateTime.now().plus(REJECTION_COOLDOWN));
         return userRepository.save(user);
     }
 
@@ -110,12 +113,11 @@ public class AdminService {
             throw new RuntimeException("No puedes eliminar tu propio usuario en sesión");
         }
 
-        try {
-            passwordRecoveryCodeRepository.deleteByUser(userToDelete);
-            userRepository.delete(userToDelete);
-        } catch (DataIntegrityViolationException ex) {
-            throw new RuntimeException("No se puede eliminar este usuario porque tiene datos relacionados en el sistema");
-        }
+        passwordRecoveryCodeRepository.deleteByUser(userToDelete);
+        userToDelete.setEstado(UserStatus.RECHAZADO);
+        userToDelete.setRejectionExpiresAt(LocalDateTime.now().plus(REJECTION_COOLDOWN));
+        userToDelete.setEnabled(true);
+        userRepository.save(userToDelete);
     }
 
     @Transactional(readOnly = true)

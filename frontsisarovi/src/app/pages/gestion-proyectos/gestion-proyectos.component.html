@@ -1,0 +1,204 @@
+<nav class="navbar">
+  <div class="navbar-content">
+    <div class="logo">
+      <h1>AROVI</h1>
+      <span class="subtitle">INMOBILIARIA</span>
+    </div>
+    <div class="user-menu">
+      <span class="welcome-name">{{ userName }}</span>
+      <div class="profile-dropdown">
+        <button class="btn-profile" (click)="toggleProfileMenu()">
+          👤 Mi Perfil
+        </button>
+        @if (showProfileMenu) {
+          <div class="dropdown-menu">
+            <button class="dropdown-item" (click)="goToProfile()">
+              👤 Ver perfil
+            </button>
+            <button class="dropdown-item" (click)="goToDashboard()">
+              ← Regresar al Dashboard
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item logout" (click)="logout()">
+              🚪 Cerrar Sesión
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="gestion-proyectos-container">
+  <div class="header">
+    <div>
+      <h2>Gestión de Proyectos</h2>
+      <p class="subtitle">Administra los proyectos inmobiliarios</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-back" (click)="goToDashboard()" style="margin-right: 1rem;">⬅ Volver al Dashboard</button>
+      <button class="btn-primary" (click)="openCreateModal()">
+        + Nuevo Proyecto
+      </button>
+      <button class="btn-secondary" 
+              [class.active]="viewMode === 'edit'"
+              (click)="setViewMode('edit')">
+        ✏️ Editar
+      </button>
+      <button class="btn-secondary" 
+              [class.active]="viewMode === 'delete'"
+              (click)="setViewMode('delete')">
+        🗑️ Eliminar
+      </button>
+    </div>
+  </div>
+
+  @if (projects.length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">🏗️</div>
+      <h3>No hay proyectos registrados</h3>
+      <p>Crea tu primer proyecto inmobiliario</p>
+      <button class="btn-primary" (click)="openCreateModal()">
+        + Crear Proyecto
+      </button>
+    </div>
+  } @else {
+    <div class="projects-grid">
+      @for (project of projects; track project.id) {
+        <div class="project-card">
+          <div class="project-image">
+            @if (project.imagenUrl) {
+              <img [src]="project.imagenUrl" [alt]="project.nombre">
+            } @else {
+              <div class="no-image">
+                <span>🏗️</span>
+                <p>Sin imagen</p>
+              </div>
+            }
+          </div>
+          <div class="project-content">
+            <h3 class="project-title">{{ project.nombre }}</h3>
+            <div class="project-info">
+              <div class="info-item">
+                <span class="label">👤 Creado por:</span>
+                <span class="value">{{ project.createdByUsername }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">📊 Etapas:</span>
+                <span class="value">{{ project.cantidadEtapas || 0 }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">🏞️ Parcelas:</span>
+                <span class="value">{{ project.cantidadParcelasTotal || 0 }}</span>
+              </div>
+            </div>
+            <button class="btn-ver-lotes" (click)="viewEtapas(project)">
+              📊 Ver Etapas
+            </button>
+            @if (viewMode === 'edit') {
+              <button class="btn-action-full btn-edit-full" (click)="openEditModal(project)">
+                ✏️ Editar este proyecto
+              </button>
+            }
+            @if (viewMode === 'delete') {
+              <button class="btn-action-full btn-delete-full" (click)="deleteProject(project)">
+                🗑️ Eliminar este proyecto
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal de Formulario -->
+@if (showModal) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ isEditing ? '✏️ Editar Proyecto' : '➕ Nuevo Proyecto' }}</h3>
+        <button class="btn-close" (click)="closeModal()">✕</button>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="project-form">
+        @if (formErrors.general) {
+          <div class="alert alert-error">
+            ⚠️ {{ formErrors.general }}
+          </div>
+        }
+
+        <div class="form-group">
+          <label for="nombreProyecto">Nombre del Proyecto *</label>
+          <input
+            type="text"
+            id="nombreProyecto"
+            [(ngModel)]="formData.nombre"
+            name="nombre"
+            placeholder="Ej: Residencial Las Palmeras"
+            [class.error]="formErrors.nombre"
+            required>
+          @if (formErrors.nombre) {
+            <span class="error-message">{{ formErrors.nombre }}</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="etapasProyecto">Cantidad de Etapas *</label>
+          <input
+            type="number"
+            id="etapasProyecto"
+            [(ngModel)]="formData.cantidadEtapas"
+            name="cantidadEtapas"
+            placeholder="Número de etapas del proyecto"
+            [class.error]="formErrors.cantidadEtapas"
+            min="1"
+            required>
+          @if (formErrors.cantidadEtapas) {
+            <span class="error-message">{{ formErrors.cantidadEtapas }}</span>
+          }
+          <small class="field-hint">📊 Se crearán automáticamente {{ formData.cantidadEtapas }} etapa(s)</small>
+        </div>
+
+        <div class="form-group">
+          <label for="imagenProyecto">Imagen del Proyecto</label>
+          @if (!imagePreview) {
+            <div class="file-input-container">
+              <input
+                type="file"
+                id="imagenProyecto"
+                (change)="onFileSelected($event)"
+                accept="image/*"
+                class="file-input">
+              <label for="imagenProyecto" class="file-label">
+                📷 Seleccionar Imagen
+              </label>
+            </div>
+          }
+          @if (imagePreview) {
+            <div class="image-preview">
+              <img [src]="imagePreview" alt="Preview">
+              <button type="button" class="btn-remove-image" (click)="removeImage()">
+                ✕ Remover
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeModal()" [disabled]="isLoading">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-submit" [disabled]="isLoading">
+            @if (isLoading) {
+              <span class="spinner-small"></span>
+              Guardando...
+            } @else {
+              {{ isEditing ? '✓ Actualizar' : '✓ Crear Proyecto' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

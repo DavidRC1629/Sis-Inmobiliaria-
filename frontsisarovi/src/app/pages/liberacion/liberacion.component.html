@@ -1,0 +1,264 @@
+<div class="liberacion-container">
+  <nav class="navbar">
+    <div class="navbar-content">
+      <div class="logo">
+        <h1>AROVI</h1>
+        <span class="subtitle">INMOBILIARIA</span>
+      </div>
+
+      <div class="user-menu">
+        <button type="button" class="btn-back" (click)="goBack()"><span class="btn-icon">↶</span> Regresar</button>
+        <button type="button" class="btn-logout" (click)="logout()"><span class="btn-icon">🚪</span> Cerrar Sesión</button>
+      </div>
+    </div>
+
+  <main class="page-content">
+    <section class="page-title-box">
+      <h2>Liberación de Lotes</h2>
+      <p>Administra devoluciones y vuelve a habilitar lotes para nuevas adquisiciones.</p>
+    </section>
+
+    <div class="panel filtros">
+      <div class="filters-grid">
+        <div class="field-group">
+          <label for="projectId">Proyecto</label>
+          <select
+            id="projectId"
+            [(ngModel)]="selectedProjectId"
+            (ngModelChange)="onProjectChange()"
+            [disabled]="loadingProjects">
+            <option [ngValue]="null">Seleccionar proyecto</option>
+            <option *ngFor="let project of projects" [ngValue]="project.id">{{ project.nombre }}</option>
+          </select>
+          <small *ngIf="loadingProjects">Cargando proyectos...</small>
+        </div>
+
+      <button type="button" class="btn-clear" (click)="limpiarFiltros()">Limpiar filtros</button>
+        <div class="field-group">
+          <label for="etapaId">Etapa</label>
+          <select
+            id="etapaId"
+            name="etapaId"
+            (ngModelChange)="onEtapaChange()"
+            [disabled]="!selectedProjectId || loadingEtapas">
+            <option *ngFor="let etapa of etapas" [ngValue]="etapa.id">Etapa {{ etapa.numeroEtapa }}</option>
+          </select>
+          <small *ngIf="loadingEtapas">Cargando etapas...</small>
+        </div>
+
+        <div class="field-group">
+          <label for="parcelaId">Parcela</label>
+          <select
+            id="parcelaId"
+            name="parcelaId"
+            [(ngModel)]="selectedParcelaId"
+            [disabled]="!selectedEtapaId || loadingParcelas">
+            <option [ngValue]="null">Seleccionar parcela</option>
+            <option *ngFor="let parcela of parcelas" [ngValue]="parcela.id">{{ parcela.nombre }}</option>
+          </select>
+          <small *ngIf="loadingParcelas">Cargando parcelas...</small>
+        </div>
+
+        <div class="field-group">
+          <label for="manzana">Manzana</label>
+          <select
+            id="manzana"
+            name="manzana"
+            [(ngModel)]="selectedManzana"
+            [disabled]="!selectedParcelaId || loadingManzanas">
+            <option [ngValue]="null">Seleccionar manzana</option>
+            <option *ngFor="let manzana of manzanas" [ngValue]="manzana.nombre">{{ manzana.nombre }}</option>
+          </select>
+          <small *ngIf="loadingManzanas">Cargando manzanas...</small>
+        </div>
+      </div>
+
+      <div class="filter-summary">
+        <div class="summary-chip" [class.ready]="!!selectedProjectId">{{ proyectoSeleccionado?.nombre || 'Proyecto pendiente' }}</div>
+        <div class="summary-chip" [class.ready]="!!selectedEtapaId">{{ etapaSeleccionada ? ('Etapa ' + etapaSeleccionada.numeroEtapa) : 'Etapa pendiente' }}</div>
+        <div class="summary-chip" [class.ready]="!!selectedParcelaId">{{ parcelaSeleccionada?.nombre || 'Parcela pendiente' }}</div>
+        <div class="summary-chip" [class.ready]="!!selectedManzana">{{ selectedManzana || 'Manzana pendiente' }}</div>
+      </div>
+    </div>
+
+      {{ estadoFiltros }}
+    </div>
+
+    <div *ngIf="!loadingLotes && filtrosCompletos && lotes.length === 0" class="empty">
+      No hay lotes adquiridos para liberar en la selección actual.
+    </div>
+
+    <div class="cards" *ngIf="!loadingLotes && lotes.length > 0">
+      <article class="card" *ngFor="let lote of lotes; trackBy: trackByLoteId">
+        <header class="card-header">
+          <div class="card-title-row">
+            <h3>Manzana {{ lote.manzana }} - Lote {{ lote.loteNumero }}</h3>
+            <span class="estado estado-selected">Disponible para liberar</span>
+          </div>
+          <div class="estados">
+            <span class="estado" [ngClass]="estadoClass(lote.estadoVisual)">{{ lote.estadoVisual }}</span>
+            <span class="estado moroso" *ngIf="lote.moroso">Moroso</span>
+          </div>
+        </header>
+
+        <div class="meta-grid">
+          <div><strong>Proyecto:</strong> {{ lote.projectNombre }}</div>
+          <div><strong>Etapa:</strong> {{ lote.etapaNumero }}</div>
+          <div><strong>Parcela:</strong> {{ lote.parcelaNombre }}</div>
+          <div><strong>Titulares:</strong> {{ lote.titulares }}</div>
+          <div class="liberacion-container">
+            <nav class="navbar">
+              <div class="navbar-content">
+                <div class="logo">
+                  <h1>AROVI</h1>
+                  <span class="subtitle">INMOBILIARIA</span>
+                </div>
+
+                <div class="user-menu">
+                  <button type="button" class="btn-back" (click)="goBack()"><span class="btn-icon">↶</span> Regresar</button>
+                  <button type="button" class="btn-logout" (click)="logout()"><span class="btn-icon">🚪</span> Cerrar Sesión</button>
+                </div>
+              </div>
+            </nav>
+
+            <main class="page-content">
+              <section class="page-title-box">
+                <h2>Liberación de Lotes</h2>
+                <p>Administra devoluciones y vuelve a habilitar lotes para nuevas adquisiciones.</p>
+              </section>
+
+              <div class="panel filtros">
+                <div class="filters-grid">
+                  <div class="field-group">
+                    <label for="projectId">Proyecto</label>
+                    <select
+                      id="projectId"
+                      name="projectId"
+                      [(ngModel)]="selectedProjectId"
+                      (ngModelChange)="onProjectChange()"
+                      [disabled]="loadingProjects">
+                      <option [ngValue]="null">Seleccionar proyecto</option>
+                      <option *ngFor="let project of projects" [ngValue]="project.id">{{ project.nombre }}</option>
+                    </select>
+                  </div>
+
+                  <div class="field-group">
+                    <label for="etapaId">Etapa</label>
+                    <select
+                      id="etapaId"
+                      name="etapaId"
+                      [(ngModel)]="selectedEtapaId"
+                      (ngModelChange)="onEtapaChange()"
+                      [disabled]="!selectedProjectId || loadingEtapas">
+                      <option [ngValue]="null">Seleccionar etapa</option>
+                      <option *ngFor="let etapa of etapas" [ngValue]="etapa.id">Etapa {{ etapa.numeroEtapa }}</option>
+                    </select>
+                  </div>
+
+                  <div class="field-group">
+                    <label for="parcelaId">Parcela</label>
+                    <select
+                      id="parcelaId"
+                      name="parcelaId"
+                      [(ngModel)]="selectedParcelaId"
+                      (ngModelChange)="onParcelaChange()"
+                      [disabled]="!selectedEtapaId || loadingParcelas">
+                      <option [ngValue]="null">Seleccionar parcela</option>
+                      <option *ngFor="let parcela of parcelas" [ngValue]="parcela.id">{{ parcela.nombre }}</option>
+                    </select>
+                  </div>
+
+                  <div class="field-group">
+                    <label for="manzana">Manzana</label>
+                    <select
+                      id="manzana"
+                      name="manzana"
+                      [(ngModel)]="selectedManzana"
+                      (ngModelChange)="onManzanaChange()"
+                      [disabled]="!selectedParcelaId || loadingManzanas">
+                      <option [ngValue]="null">Seleccionar manzana</option>
+                      <option *ngFor="let manzana of manzanas" [ngValue]="manzana.nombre">{{ manzana.nombre }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="filter-actions-row">
+                  <button type="button" class="btn-clear" (click)="limpiarFiltros()">Limpiar filtros</button>
+                </div>
+              </div>
+
+              <div *ngIf="notification" class="notification" [class.success]="notification.type === 'success'" [class.error]="notification.type === 'error'">
+                {{ notification.message }}
+              </div>
+
+              <div *ngIf="!loadingLotes && selectedProjectId && !filtrosCompletos" class="empty helper">
+                {{ estadoFiltros }}
+              </div>
+
+              <div *ngIf="!loadingLotes && filtrosCompletos && lotes.length === 0" class="empty">
+                No hay lotes adquiridos para liberar en la selección actual.
+              </div>
+
+              <div class="cards" *ngIf="!loadingLotes && lotes.length > 0">
+                <article class="card" *ngFor="let lote of lotes; trackBy: trackByLoteId">
+                  <header class="card-header">
+                    <div class="card-title-row">
+                      <h3>Manzana {{ lote.manzana }} - Lote {{ lote.loteNumero }}</h3>
+                      <span class="estado estado-selected">Disponible para liberar</span>
+                    </div>
+                    <div class="estados">
+                      <span class="estado" [ngClass]="estadoClass(lote.estadoVisual)">{{ lote.estadoVisual }}</span>
+                      <span class="estado moroso" *ngIf="lote.moroso">Moroso</span>
+                    </div>
+                  </header>
+
+                  <div class="meta-grid">
+                    <div><strong>Proyecto:</strong> {{ lote.projectNombre }}</div>
+                    <div><strong>Etapa:</strong> {{ lote.etapaNumero }}</div>
+                    <div><strong>Parcela:</strong> {{ lote.parcelaNombre }}</div>
+                    <div><strong>Titulares:</strong> {{ lote.titulares }}</div>
+                    <div><strong>DNI(s):</strong> {{ lote.titularesDni || '-' }}</div>
+                    <div><strong>Pago registrado:</strong> {{ formatMoney(lote.montoPagadoTotal) }}</div>
+                  </div>
+
+                  <div class="password-warning" *ngIf="lote.requierePasswordAdmin">
+                    Este lote tiene pagos registrados. Para liberar, se pedirá contraseña de administrador.
+                  </div>
+
+                  <div class="form-block">
+                    <label [for]="'devolucion-' + lote.loteId">Descripción de devolución</label>
+                    <textarea
+                      [id]="'devolucion-' + lote.loteId"
+                      [(ngModel)]="devolucionPorLote[lote.loteId]"
+                      maxlength="500"
+                      placeholder="Detalla el motivo de liberación/devolución del lote"></textarea>
+                  </div>
+
+                  <div class="actions">
+                    <button
+                      class="btn-liberar"
+                      [disabled]="liberandoLoteId === lote.loteId"
+                      (click)="liberar(lote)">
+                      <span *ngIf="liberandoLoteId !== lote.loteId">Liberar lote</span>
+                      <span *ngIf="liberandoLoteId === lote.loteId">Liberando...</span>
+                    </button>
+                  </div>
+                </article>
+              </div>
+            </main>
+          </div>
+
+          <div class="modal-overlay" *ngIf="showPasswordModal" (click)="cerrarPasswordModal()">
+            <div class="modal" (click)="$event.stopPropagation()">
+              <h3>Confirmación de seguridad</h3>
+              <p>Ingresa la contraseña del administrador en sesión para confirmar la liberación.</p>
+
+              <label for="adminPassword">Contraseña</label>
+              <input id="adminPassword" type="password" [(ngModel)]="password" />
+
+              <div class="modal-actions">
+                <button type="button" class="btn-cancel" (click)="cerrarPasswordModal()">Cancelar</button>
+                <button type="button" class="btn-confirm" (click)="confirmarLiberacionConPassword()">Confirmar liberación</button>
+              </div>
+            </div>
+          </div>

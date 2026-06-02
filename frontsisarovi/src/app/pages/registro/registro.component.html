@@ -1,0 +1,215 @@
+<div class="registro-container">
+  <!-- Navbar con menú desplegable -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <button class="btn-back" (click)="goToDashboard()">
+        ← Volver
+      </button>
+      <h1>📋 Registro del Sistema</h1>
+    </div>
+    
+    <div class="navbar-menu">
+      <div class="profile-dropdown">
+        <button class="btn-profile" (click)="toggleProfileMenu()">
+          👤 Mi Perfil
+        </button>
+        
+        @if (showProfileMenu) {
+          <div class="dropdown-menu">
+            <button class="dropdown-item" (click)="goToProfile()">
+              👤 Ver perfil
+            </button>
+            <button class="dropdown-item" (click)="goToDashboard()">
+              ← Regresar al Dashboard
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item logout" (click)="logout()">
+              🚪 Cerrar Sesión
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenedor principal -->
+  <main class="main-content">
+    <!-- Encabezado con filtros -->
+    <div class="header-section">
+      <div class="filters-container">
+        <div class="filter-group">
+          <label>Tipo de Entidad:</label>
+          <select [(ngModel)]="selectedEntityType" (change)="applyFilters()" class="filter-select">
+            <option value="all">Todas</option>
+            @for (entity of entityTypeOptions; track entity) {
+              <option [value]="entity">{{ entity }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Tipo de Operación:</label>
+          <select [(ngModel)]="selectedOperationType" (change)="applyFilters()" class="filter-select">
+            <option value="all">Todas</option>
+            <option value="INGRESO">Ingresos</option>
+            <option value="CREATE">Creación</option>
+            <option value="UPDATE">Actualización</option>
+            <option value="DELETE">Eliminación</option>
+            <option value="PROFORMA">Proforma</option>
+            <option value="CRONOGRAMA">Cronograma</option>
+            <option value="ADQUISICION_LOTE">Adquisición de lote</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Desde:</label>
+          <input type="date" [(ngModel)]="selectedDateFrom" (change)="applyFilters()" class="filter-select" />
+        </div>
+
+        <div class="filter-group">
+          <label>Hasta:</label>
+          <input type="date" [(ngModel)]="selectedDateTo" (change)="applyFilters()" class="filter-select" />
+        </div>
+
+      </div>
+
+      @if (selectedOperationType === 'INGRESO') {
+        <div class="ingresos-total-card">
+          <span class="ingresos-total-label">Total de ingresos en el rango seleccionado</span>
+          <strong class="ingresos-total-value">S/ {{ totalIngresosPeriodo | number:'1.0-2' }}</strong>
+          <button class="btn-pdf-ingresos" (click)="generarPdfIngresos()" [disabled]="filteredLogs.length === 0" title="Generar PDF de ingresos">
+            📄 Generar PDF
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Lista de registros -->
+    <div class="logs-container">
+      @if (editItemMessage) {
+        <div class="edit-item-msg">{{ editItemMessage }}</div>
+      }
+      @if (isLoading) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Cargando registros...</p>
+        </div>
+      } @else if (filteredLogs.length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <h3>No hay ningún registro</h3>
+          <p>Cuando existan movimientos del sistema, aparecerán aquí.</p>
+        </div>
+      } @else {
+        <div
+          class="logs-list"
+          [class.scrollable]="pagedLogs.length > 10"
+          [style.max-height.px]="getLogsViewportHeight()"
+        >
+          @for (log of pagedLogs; track log.id) {
+            <div #logCardRef class="log-card" [class]="getOperationClass(log.operationType)">
+              <div class="log-header">
+                <div class="log-icon">
+                  <span class="operation-icon">{{ getOperationIcon(log.operationType) }}</span>
+                  <span class="entity-icon">{{ getEntityIcon(log.entityType) }}</span>
+                </div>
+                <div class="log-info">
+                  <h3 class="log-title">
+                    <span class="operation-badge">{{ getOperationLabel(log.operationType) }}</span>
+                    {{ getEntityLabel(log) }}
+                  </h3>
+                  @if (log.operationType === 'INGRESO') {
+                    <p class="log-description ingreso-short"><strong>{{ getIngresoTipoLabel(log) }}</strong></p>
+                  } @else {
+                    <p class="log-description">{{ log.description }}</p>
+                  }
+                </div>
+                <div class="log-meta">
+                  <span class="log-time">{{ formatDate(log.timestamp) }}</span>
+                </div>
+              </div>
+
+              <div class="log-details">
+                <div class="log-user">
+                  <span class="user-label">👤 Usuario:</span>
+                  <span class="user-name">{{ log.userName }}</span>
+                  <span class="user-dni">(DNI: {{ log.userDni }})</span>
+                </div>
+
+                @if (log.operationType === 'INGRESO') {
+                  <div class="ingreso-grid">
+                    <div class="ingreso-item ingreso-item-monto">
+                      <span class="data-label">💵 Monto</span>
+                      <strong class="ingreso-monto-value">S/ {{ (log.ingresoMonto || 0) | number:'1.0-2' }}</strong>
+                    </div>
+                    <div class="ingreso-item">
+                      <span class="data-label">🧾 Cliente</span>
+                      <span>{{ log.clienteNombre || '-' }} (DNI: {{ log.clienteDni || '-' }})</span>
+                    </div>
+                    <div class="ingreso-item ingreso-item-wide">
+                      <span class="data-label">💳 Medios</span>
+                      <span>{{ log.medios || '-' }}</span>
+                    </div>
+                    <div class="ingreso-item ingreso-item-wide">
+                      <span class="data-label">📝 Item</span>
+                      @if (editItemId === log.id) {
+                        <div class="item-edit-wrap">
+                          <textarea maxlength="150" [(ngModel)]="editItemDraft"></textarea>
+                          <div class="item-edit-meta">{{ (editItemDraft || '').length }}/150</div>
+                          <div class="item-edit-actions">
+                            <button type="button" class="item-btn save" (click)="guardarEdicionItem(log)">Guardar</button>
+                            <button type="button" class="item-btn cancel" (click)="cancelarEdicionItem()">Cancelar</button>
+                          </div>
+                        </div>
+                      } @else {
+                        <div class="item-view-row">
+                          <span>{{ getIngresoItem(log) }}</span>
+                          <button type="button" class="item-edit-trigger" (click)="iniciarEdicionItem(log)" title="Editar item">✏️</button>
+                        </div>
+                      }
+                    </div>
+                    <div class="ingreso-item ingreso-item-wide">
+                      <span class="data-label">🏘️ Lote asociado</span>
+                      <span>{{ getIngresoLoteInfo(log) }}</span>
+                    </div>
+                  </div>
+                }
+
+                @if (log.operationType === 'UPDATE' && log.oldValue && log.newValue) {
+                  <div class="log-changes">
+                    <div class="change-section">
+                      <span class="change-label">✏️ Cambios realizados:</span>
+                      <div class="change-details">
+                        Los datos fueron modificados
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                @if (log.operationType === 'CREATE' && log.newValue) {
+                  <div class="log-data">
+                    <span class="data-label">✅ Registro creado exitosamente</span>
+                  </div>
+                }
+
+                @if (log.operationType === 'DELETE' && log.oldValue) {
+                  <div class="log-data">
+                    <span class="data-label">🗑️ Registro eliminado del sistema</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (filteredLogs.length > pageSize) {
+          <div class="pagination-row">
+            <button class="page-btn" (click)="goToPrevPage()" [disabled]="currentPage === 1">← Anterior</button>
+            <span class="page-indicator">Página {{ currentPage }} de {{ totalPages }}</span>
+            <button class="page-btn" (click)="goToNextPage()" [disabled]="currentPage === totalPages">Siguiente →</button>
+          </div>
+        }
+      }
+    </div>
+  </main>
+</div>

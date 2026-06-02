@@ -1,0 +1,91 @@
+<nav class="navbar">
+  <div class="navbar-content">
+    <div class="navbar-left">
+      <button class="btn-regresar" (click)="goToDashboard()">
+        ← Regresar
+      </button>
+      <div class="logo">
+        <h1>AROVI</h1>
+        <span class="subtitle">INMOBILIARIA</span>
+      </div>
+    </div>
+    <div class="user-menu">
+      <span class="welcome-name">{{ currentUser?.nombres || 'Admin' }}</span>
+      <button class="btn-mi-perfil" (click)="toggleProfileMenu()">
+        👤 Mi Perfil
+      </button>
+      @if (showProfileMenu) {
+        <div class="dropdown-menu">
+          <button class="dropdown-item" (click)="goToProfile()">
+            👤 Ver perfil
+          </button>
+          <button class="dropdown-item" (click)="goToDashboard()">
+            ← Regresar
+          </button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item logout" (click)="logout()">
+            🚪 Cerrar Sesión
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</nav>
+
+<div class="profile-page">
+  <div class="profile-container">
+    <h2 class="page-title">Mi Perfil</h2>
+    
+    <div class="profile-card">
+      <div class="avatar-section">
+        <div class="avatar-circle">
+          <span class="avatar-initials">{{ (currentUser?.nombres?.charAt(0) || 'A') + (currentUser?.primerApellido?.charAt(0) || 'M') }}</span>
+        </div>
+        <h3 class="user-name">{{ currentUser?.nombres || 'Admin' }} {{ currentUser?.primerApellido || 'Maestro' }}</h3>
+        <span class="role-badge">Administrador</span>
+      </div>
+
+      <div class="info-sections">
+        <div class="info-row">
+          <span class="info-icon">📋</span>
+          <span class="info-label">DNI</span>
+          <span class="info-value">{{ currentUser?.dni || '00000000' }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-icon">✉️</span>
+          <span class="info-label">Correo</span>
+          <span class="info-value">{{ currentUser?.email || 'No registrado' }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-icon">👤</span>
+          <span class="info-label">Nombres</span>
+          <span class="info-value">{{ currentUser?.nombres || 'Admin' }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-icon">👤</span>
+          <span class="info-label">Primer Apellido</span>
+          <span class="info-value">{{ currentUser?.primerApellido || 'Maestro' }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-icon">👤</span>
+          <span class="info-label">Segundo Apellido</span>
+          <span class="info-value">{{ currentUser?.segundoApellido || 'Sistema' }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-icon">🔥</span>
+          <span class="info-label">Rol</span>
+          <span class="info-value">Administrador</span>
+        </div>
+      </div>
+
+      <button class="btn-delete-account">
+        🗑️ Eliminar mi cuenta
+      </button>
+    </div>
+  </div>
+</div>

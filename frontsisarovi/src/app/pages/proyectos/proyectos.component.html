@@ -1,0 +1,153 @@
+<div class="proyectos-container">
+  <nav class="navbar">
+    <div class="navbar-content">
+      <div class="logo-nav">
+        <h1>AROVI</h1>
+        <span class="subtitle">INMOBILIARIA</span>
+      </div>
+      <button (click)="goBack()" class="btn-back" style="margin-right: 1rem;">⬅ Volver</button>
+      <div class="user-menu">
+        <span class="user-info">
+          <span class="welcome-name">{{ userName }}</span>
+        </span>
+        <button (click)="goToProfile()" class="btn-profile">Mi Perfil</button>
+        <button (click)="goToDashboard()" class="btn-dashboard">Dashboard</button>
+        <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
+      </div>
+    </div>
+  </nav>
+
+  <div style="display: flex; align-items: center; margin-top: 1.5rem;">
+    <h2 style="margin: 0 1rem 0 0;">Gestión de Proyectos</h2>
+    <button (click)="goToDashboard()" class="btn-back-dashboard" style="margin-left: 0.5rem;">⬅ Ir al Dashboard</button>
+  </div>
+
+  <main class="main-content">
+    @if (showSuccessMessage) {
+      <div class="success-message">
+        ✓ Proyecto creado exitosamente
+      </div>
+    }
+    
+    <div class="header-section">
+      <h2>Gestión de Proyectos</h2>
+      <button (click)="abrirModal()" class="btn-primary">+ Nuevo Proyecto</button>
+    </div>
+
+    <div class="proyectos-list">
+      @if (proyectos.length === 0) {
+        <div class="empty-state">
+          <h3>No hay proyectos creados</h3>
+          <p>Comienza creando tu primer proyecto inmobiliario</p>
+        </div>
+      } @else {
+        <div class="proyectos-grid">
+          @for (proyecto of proyectos; track proyecto.id) {
+            <div class="proyecto-card">
+              @if (proyecto.foto) {
+                <img [src]="proyecto.foto" [alt]="proyecto.nombre" class="proyecto-imagen">
+              }
+              <h3>{{ proyecto.nombre }}</h3>
+              <div class="proyecto-info">
+                <p><strong>Pertenece a:</strong> {{ proyecto.perteneceA }}</p>
+                <p><strong>Lotes:</strong> {{ proyecto.cantidadLotes }}</p>
+                <p><strong>Manzanas:</strong> {{ proyecto.cantidadManzanas }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </main>
+
+  <!-- Modal -->
+  @if (showModal) {
+    <div class="modal-overlay" (click)="cerrarModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Nuevo Proyecto</h2>
+          <button class="btn-close" (click)="cerrarModal()">&times;</button>
+        </div>
+        <form (ngSubmit)="guardarProyecto()" #proyectoForm="ngForm">
+          <div class="form-group">
+            <label for="nombre">Nombre del Proyecto*</label>
+            <input
+              type="text"
+              id="nombre"
+              name="nombre"
+              [(ngModel)]="nuevoProyecto.nombre"
+              required
+              class="form-control"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="perteneceA">Pertenece a:*</label>
+            <input
+              type="text"
+              id="perteneceA"
+              name="perteneceA"
+              [(ngModel)]="nuevoProyecto.perteneceA"
+              placeholder="Escriba el nombre del propietario"
+              required
+              class="form-control"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="foto">Foto del Proyecto</label>
+            <input
+              type="file"
+              id="foto"
+              name="foto"
+              (change)="onFileSelected($event)"
+              accept="image/*"
+              class="form-control"
+            />
+            @if (nuevoProyecto.foto) {
+              <div class="image-preview">
+                <img [src]="nuevoProyecto.foto" alt="Preview">
+              </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="cantidadLotes">Cantidad de Lotes*</label>
+            <input
+              type="number"
+              id="cantidadLotes"
+              name="cantidadLotes"
+              [(ngModel)]="nuevoProyecto.cantidadLotes"
+              min="0"
+              required
+              class="form-control"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="cantidadManzanas">Cantidad de Manzanas</label>
+            <input
+              type="number"
+              id="cantidadManzanas"
+              name="cantidadManzanas"
+              [(ngModel)]="nuevoProyecto.cantidadManzanas"
+              (ngModelChange)="validarCantidadManzanas()"
+              min="0"
+              max="27"
+              class="form-control"
+            />
+            <small class="form-hint">De 0 a 27. Dejar en 0 para sin manzanas.</small>
+            @if (errorManzanas) {
+              <small class="form-error">{{ errorManzanas }}</small>
+            }
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+            <button type="submit" class="btn-primary" [disabled]="!proyectoForm.valid">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

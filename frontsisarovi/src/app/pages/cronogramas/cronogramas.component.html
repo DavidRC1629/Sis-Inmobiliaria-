@@ -1,0 +1,601 @@
+<div class="cronogramas-page">
+  <header class="topbar-card">
+    <div>
+      <h1>Cronograma de Pagos</h1>
+      <p>Control de separaciones, cuotas, retrasos y pagos por cliente.</p>
+    </div>
+    <button class="btn-back" (click)="goBack()">Volver a clientes</button>
+  </header>
+
+  <div class="success-banner" *ngIf="notification?.type === 'success'">
+    <span class="success-banner-icon">✓</span>
+    <span>{{ notification?.message }}</span>
+  </div>
+
+  <section class="filters-card">
+    <div class="filters-panel">
+      <div class="filter-item">
+        <label>DNI</label>
+        <input type="text" placeholder="00000000" [(ngModel)]="filtros.dni" />
+      </div>
+      <div class="filter-item">
+        <label>Cliente</label>
+        <input type="text" placeholder="Nombres o apellidos" [(ngModel)]="filtros.nombres" />
+      </div>
+      <div class="filter-item">
+        <label>Estado</label>
+        <select [(ngModel)]="filtros.estado">
+          <option [ngValue]="undefined">Todos</option>
+          <option [ngValue]="'AL_DIA'">Al día</option>
+          <option [ngValue]="'DEUDOR'">Deudor</option>
+          <option [ngValue]="'SEPARACION_EN_CURSO'">Separación en curso</option>
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-search" (click)="buscar()">Buscar</button>
+        <button class="btn-clean" (click)="limpiar()">Limpiar</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="main-layout" [class.detail-mode]="!!selectedContrato">
+    <ng-container *ngIf="!selectedContrato; else detailView">
+      <section class="list-layout" *ngIf="!loading; else loadingState">
+        <article class="list-panel card-shell">
+          <div class="panel-title">
+            <div>
+              <h3>Contratos</h3>
+              <p>Clientes con cronograma activo</p>
+            </div>
+            <span>{{ contratosConCronograma.length }} registro(s)</span>
+          </div>
+
+          <div class="filter-tabs">
+            <button class="filter-tab" [class.active]="filtroEstadoUI === 'todos'" (click)="setFiltroEstadoUI('todos')">Todos</button>
+            <button class="filter-tab pagado" [class.active]="filtroEstadoUI === 'pagado'" (click)="setFiltroEstadoUI('pagado')">Pagados</button>
+            <button class="filter-tab moroso" [class.active]="filtroEstadoUI === 'moroso'" (click)="setFiltroEstadoUI('moroso')">Morosos</button>
+            <button class="filter-tab en-curso" [class.active]="filtroEstadoUI === 'en_curso'" (click)="setFiltroEstadoUI('en_curso')">Pago en curso</button>
+          </div>
+
+          <div class="contracts-list split-list">
+            <button
+              class="contract-item"
+              *ngFor="let contrato of contratosConCronogramaPaginados; trackBy: trackByContrato"
+              (click)="seleccionarContrato(contrato, 'contratos')"
+              [class.active]="esContratoSeleccionado(contrato, 'contratos')"
+            >
+              <div class="contract-head">
+                <strong>{{ contrato.clienteNombre }}</strong>
+                <div class="estado-pills-stack">
+                  <span class="estado-pill" [ngClass]="displayEstadoClass(contrato)">{{ displayEstadoLabel(contrato) }}</span>
+                  <span class="estado-pill moroso" *ngIf="isMoroso(contrato)">Moroso</span>
+                </div>
+              </div>
+              <div class="contract-meta">
+                <span>DNI: {{ contrato.clienteDni }}</span>
+                <span>{{ contrato.projectNombre }} - L{{ contrato.loteNumero }}</span>
+              </div>
+              <div class="contract-plan">{{ resumenPlan(contrato) }}</div>
+              <div class="contract-money">
+                <span>Pagado: {{ formatMoney(contrato.montoPagadoTotal) }}</span>
+                <span>Debe: {{ formatMoney(saldoVisible(contrato)) }}</span>
+              </div>
+            </button>
+
+            <div class="empty" *ngIf="contratosConCronograma.length === 0">No hay contratos con cronograma activo para el filtro seleccionado.</div>
+                    <div class="pagination-bar" *ngIf="contratosConCronogramaTotalPages > 1">
+                      <button (click)="setContratosPage(contratosPage - 1)" [disabled]="contratosPage === 1">&lt;</button>
+                      <span *ngFor="let p of [].constructor(contratosConCronogramaTotalPages); let i = index">
+                        <button (click)="setContratosPage(i + 1)" [class.active]="contratosPage === (i + 1)">{{ i + 1 }}</button>
+                      </span>
+                      <button (click)="setContratosPage(contratosPage + 1)" [disabled]="contratosPage === contratosConCronogramaTotalPages">&gt;</button>
+                    </div>
+          </div>
+        </article>
+
+        <article class="list-panel card-shell">
+          <div class="panel-title">
+            <div>
+              <h3>En Proceso de Inicial</h3>
+              <p>Clientes que aún completan su separación</p>
+            </div>
+            <span>{{ contratosEnInicialFiltrados.length }} registro(s)</span>
+          </div>
+
+          <div class="filter-tabs">
+            <button class="filter-tab" [class.active]="filtroInicialUI === 'todos'" (click)="setFiltroInicialUI('todos')">Todos</button>
+            <button class="filter-tab moroso" [class.active]="filtroInicialUI === 'moroso'" (click)="setFiltroInicialUI('moroso')">Morosos</button>
+            <button class="filter-tab en-curso" [class.active]="filtroInicialUI === 'en_curso'" (click)="setFiltroInicialUI('en_curso')">Separación en curso</button>
+          </div>
+
+          <div class="contracts-list split-list">
+            <button
+              class="contract-item contract-item-inicial"
+              *ngFor="let contrato of contratosEnInicialFiltradosPaginados; trackBy: trackByContrato"
+              (click)="seleccionarContrato(contrato, 'inicial')"
+              [class.active]="esContratoSeleccionado(contrato, 'inicial')"
+            >
+              <div class="contract-head">
+                <strong>{{ contrato.clienteNombre }}</strong>
+                <div class="estado-pills-stack">
+                  <span class="estado-pill" [ngClass]="displayEstadoClass(contrato)">{{ displayEstadoLabel(contrato) }}</span>
+                  <span class="estado-pill moroso" *ngIf="isInicialMoroso(contrato)">Moroso</span>
+                </div>
+              </div>
+              <div class="contract-meta">
+                <span>DNI: {{ contrato.clienteDni }}</span>
+                <span>{{ contrato.projectNombre }} - L{{ contrato.loteNumero }}</span>
+              </div>
+              <div class="contract-plan">{{ resumenPlan(contrato) }}</div>
+              <div class="contract-money">
+                <span>Pagado: {{ formatMoney(contrato.montoPagadoTotal) }}</span>
+                <span>Debe: {{ formatMoney(saldoVisible(contrato)) }}</span>
+              </div>
+            </button>
+
+            <div class="empty" *ngIf="contratosEnInicialFiltrados.length === 0">No hay clientes en proceso de inicial para el filtro seleccionado.</div>
+                    <div class="pagination-bar" *ngIf="contratosEnInicialTotalPages > 1">
+                      <button (click)="setInicialPage(inicialPage - 1)" [disabled]="inicialPage === 1">&lt;</button>
+                      <span *ngFor="let p of [].constructor(contratosEnInicialTotalPages); let i = index">
+                        <button (click)="setInicialPage(i + 1)" [class.active]="inicialPage === (i + 1)">{{ i + 1 }}</button>
+                      </span>
+                      <button (click)="setInicialPage(inicialPage + 1)" [disabled]="inicialPage === contratosEnInicialTotalPages">&gt;</button>
+                    </div>
+          </div>
+        </article>
+      </section>
+
+      <ng-template #loadingState>
+        <section class="right-panel card-shell empty-detail">
+          Cargando cronogramas...
+        </section>
+      </ng-template>
+
+      <section class="right-panel card-shell empty-detail" *ngIf="!loading && contratos.length === 0">
+        No hay cronogramas para el filtro seleccionado.
+      </section>
+    </ng-container>
+
+    <ng-template #detailView>
+    <section class="detail-layout" *ngIf="selectedContrato as contrato">
+      <aside class="list-panel card-shell detail-list-panel">
+        <div class="panel-title">
+          <div>
+            <h3>{{ panelActivoTitulo }}</h3>
+            <p>{{ panelActivoDescripcion }}</p>
+          </div>
+          <span>{{ contratosPanelActivo.length }} registro(s)</span>
+        </div>
+
+        <div class="contracts-list split-list detail-side-list">
+          <button
+            class="contract-item"
+            [class.contract-item-inicial]="selectedSection === 'inicial'"
+            *ngFor="let item of contratosPanelActivo; trackBy: trackByContrato"
+            (click)="seleccionarContrato(item, selectedSection || 'contratos')"
+            [class.active]="esContratoSeleccionado(item)"
+          >
+            <div class="contract-head">
+              <strong>{{ item.clienteNombre }}</strong>
+              <div class="estado-pills-stack">
+                <span class="estado-pill" [ngClass]="displayEstadoClass(item)">{{ displayEstadoLabel(item) }}</span>
+                <span class="estado-pill moroso" *ngIf="isMoroso(item)">Moroso</span>
+              </div>
+            </div>
+            <div class="contract-meta">
+              <span>DNI: {{ item.clienteDni }}</span>
+              <span>{{ item.projectNombre }} - L{{ item.loteNumero }}</span>
+            </div>
+            <div class="contract-plan">{{ resumenPlan(item) }}</div>
+            <div class="contract-money">
+              <span>Pagado: {{ formatMoney(item.montoPagadoTotal) }}</span>
+              <span>Debe: {{ formatMoney(saldoVisible(item)) }}</span>
+            </div>
+          </button>
+        </div>
+      </aside>
+
+    <section class="right-panel card-shell detail-panel">
+      <div class="detail-header-hero">
+        <div class="detail-header-info">
+          <h2>{{ contrato.clienteNombre }}</h2>
+          <p>{{ contrato.projectNombre }} | Etapa {{ contrato.etapaNumero }} | {{ contrato.parcelaNombre }} | {{ contrato.manzana }} | L{{ contrato.loteNumero }}</p>
+          <ng-container *ngIf="!asesorEditing">
+            <div class="asesor-line">
+              <span *ngIf="contrato.asesor" class="asesor-label">Asesor: <strong>{{ contrato.asesor }}</strong></span>
+              <span *ngIf="!contrato.asesor" class="asesor-placeholder-small">Sin asesor asignado</span>
+              <button class="btn-edit-asesor" (click)="editarAsesor(contrato)" title="Editar asesor">&#9998;</button>
+            </div>
+          </ng-container>
+          <div class="asesor-edit-row" *ngIf="asesorEditing">
+            <input class="asesor-input" [(ngModel)]="asesorEditValue" placeholder="Nombre del asesor" maxlength="120" />
+            <button class="btn-asesor-save" (click)="guardarAsesor(contrato)">Guardar</button>
+            <button class="btn-asesor-cancel" (click)="cancelarEditarAsesor()">Cancelar</button>
+          </div>
+        </div>
+        <div class="detail-header-actions">
+          <span class="estado-pill big" [ngClass]="displayEstadoClass(contrato)">{{ displayEstadoLabel(contrato) }}</span>
+          <button class="btn-amortizar" (click)="abrirAmortizar()" *ngIf="hayAlgoQueAmortizar(contrato)">Amortizar</button>
+          <button class="btn-amortizar btn-pago-cuota" (click)="abrirPagoCuota()" *ngIf="hayAlgoQueAmortizar(contrato) && separacionPendiente(contrato) <= 0">Registrar pago de cuota</button>
+          <button class="btn-descuento" (click)="abrirDescuento()" *ngIf="selectedContrato && separacionPendiente(selectedContrato) <= 0 && !isPagado(selectedContrato)">Aplicar descuento</button>
+          <button class="btn-clean detail-back" (click)="cerrarDetalle()">Volver al listado</button>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <article class="summary-card">
+          <span>Precio de Venta</span>
+          <strong>{{ formatMoney(contrato.precioVenta) }}</strong>
+        </article>
+        <article class="summary-card">
+          <span>Monto Pagado</span>
+          <strong>{{ formatMoney(contrato.montoPagadoTotal) }}</strong>
+        </article>
+        <article class="summary-card">
+          <span>Saldo Pendiente</span>
+          <strong>{{ formatMoney(saldoVisible(contrato)) }}</strong>
+        </article>
+        <article class="summary-card" *ngIf="separacionPendiente(contrato) > 0">
+          <span>Faltante de Separación</span>
+          <strong>{{ formatMoney(separacionPendiente(contrato)) }}</strong>
+        </article>
+        <article class="summary-card" *ngIf="separacionPendiente(contrato) > 0">
+          <span>Días para realizar pago</span>
+          <strong>40 Días</strong>
+        </article>
+        <article class="summary-card">
+          <span>Cuotas Pagadas</span>
+          <strong>{{ cuotasPagadasCount(contrato) }} / {{ contrato.cuotas.length || 0 }}</strong>
+        </article>
+      </div>
+
+      <section class="credito-box" *ngIf="mostrarInfoCredito(contrato)">
+        <div class="credito-head">
+          <h4>Información del crédito del lote</h4>
+          <span class="estado-pill mensual">Interés: {{ contrato.interesPorcentaje }}%</span>
+        </div>
+
+        <div class="credito-metrics">
+          <article class="summary-card">
+            <span>Saldo base a financiar</span>
+            <strong>{{ formatMoney(saldoBaseCredito(contrato)) }}</strong>
+          </article>
+          <article class="summary-card">
+            <span>Interés aplicado</span>
+            <strong>{{ formatMoney(montoInteresCredito(contrato)) }}</strong>
+          </article>
+          <article class="summary-card">
+            <span>Total a crédito</span>
+            <strong>{{ formatMoney(totalCreditoConInteres(contrato)) }}</strong>
+          </article>
+          <article class="summary-card">
+            <span>Plazo</span>
+            <strong>{{ contrato.plazoMeses }} meses</strong>
+          </article>
+        </div>
+
+        <section class="cuotas-progress-box" *ngIf="mostrarProgresoCuotas(contrato)">
+          <div class="separacion-head cuotas-progress-head">
+            <div>
+              <h4>Pago de cuotas en curso</h4>
+              <p>Plan: {{ contrato.cuotas.length || contrato.plazoMeses }} cuotas | Pagadas: {{ cuotasPagadasCount(contrato) }} / {{ contrato.cuotas.length || 0 }}</p>
+              <p>Acumulado: {{ formatMoney(montoPagadoCuotas(contrato)) }} | Objetivo: {{ formatMoney(montoTotalCuotasPlan(contrato)) }}</p>
+            </div>
+            <strong>Pendiente: {{ formatMoney(saldoVisible(contrato)) }}</strong>
+          </div>
+
+          <div class="progress-track cuotas-progress-track">
+            <div class="progress-bar cuotas-progress-bar" [style.width.%]="avanceCuotasPct(contrato)"></div>
+          </div>
+        </section>
+
+      </section>
+
+      <section class="separacion-box" *ngIf="separacionPendiente(contrato) > 0">
+        <div class="separacion-head">
+          <div>
+            <h4>Separación en curso</h4>
+            <p>Objetivo: {{ formatMoney(contrato.montoSeparacionObjetivo) }} | Acumulado: {{ formatMoney(contrato.montoSeparacionAcumulado) }}</p>
+            <p *ngIf="contrato.tipoOperacion !== 'CONTADO'">Precio a crédito: <strong>{{ formatMoney(contrato.precioVenta) }}</strong></p>
+          </div>
+          <strong>Pendiente: {{ formatMoney(separacionPendiente(contrato)) }}</strong>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-bar" [style.width.%]="avanceSeparacionPct(contrato)"></div>
+        </div>
+      </section>
+
+      <section class="sheet-tabs" *ngIf="(contrato.cuotas?.length || 0) > 0 || mostrarTabSeparacion(contrato)">
+        <button
+          *ngIf="mostrarTabSeparacion(contrato)"
+          class="sheet-tab-btn"
+          [class.active]="activeDetailTab === 'separacion'"
+          (click)="switchDetalleTab('separacion')"
+          type="button"
+        >
+          Detalle Pago Separación/Inicial
+        </button>
+        <button
+          *ngIf="mostrarTabCronograma(contrato)"
+          class="sheet-tab-btn"
+          [class.active]="activeDetailTab === 'cronograma'"
+          (click)="switchDetalleTab('cronograma')"
+          type="button"
+        >
+          Cronograma del Contrato
+        </button>
+        <button
+          *ngIf="mostrarTabPagosCuotas(contrato)"
+          class="sheet-tab-btn"
+          [class.active]="activeDetailTab === 'pagos'"
+          (click)="switchDetalleTab('pagos')"
+          type="button"
+        >
+          Detalle de Pagos Efectuados
+        </button>
+      </section>
+
+      <section class="sheet-layout single-sheet" *ngIf="activeDetailTab === 'separacion' && mostrarTabSeparacion(contrato)">
+        <article class="sheet-card right-sheet">
+          <div class="sheet-title">DETALLE PAGO DE SEPARACIÓN / INICIAL</div>
+          <div class="separacion-vencimiento-info" *ngIf="separacionFechaVencimiento(contrato)">
+            <span>Fecha de Vencimiento: <strong>{{ formatDate(separacionFechaVencimiento(contrato)) }}</strong></span>
+            <span class="sep-dias">Días de Retraso: <strong [class.text-moroso]="separacionDiasRetraso(contrato) > 0">{{ separacionDiasRetraso(contrato) }}</strong></span>
+            <span class="estado-pill block moroso" *ngIf="isSeparacionMorosa(contrato)">MOROSO</span>
+          </div>
+          <table class="sheet-table">
+            <thead>
+              <tr>
+                <th>FECHA DE PAGO</th>
+                <th>N° DE CUOTA</th>
+                <th>TIPO DE PAGO</th>
+                <th>MONTO</th>
+                <th>RECIBO ENTREGADO A CLIENTE</th>
+                <th>ESTADO DE PAGO</th>
+                <th>NOTAS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let detalle of detallePagosSeparacion(contrato); trackBy: trackByDetallePago">
+                <td>{{ formatDate(detalle.fechaPago) }}</td>
+                <td>{{ detalle.numeroCuota }}</td>
+                <td>{{ detalle.tipoPago }}</td>
+                <td>{{ formatMoney(detalle.monto) }}</td>
+                <td>SI</td>
+                <td>
+                  <span class="estado-pill block" [ngClass]="cuotaEstadoClassFromDetalle(detalle.estadoPago, detalle.diasRetraso)">
+                    {{ detalle.estadoPago }}
+                  </span>
+                </td>
+                <td>{{ detalle.notas }}</td>
+              </tr>
+              <tr *ngIf="detallePagosSeparacion(contrato).length === 0">
+                <td colspan="7" class="sheet-empty-row">Aún no hay pagos de separación registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      <section class="sheet-layout single-sheet" *ngIf="activeDetailTab === 'cronograma' && mostrarTabCronograma(contrato)">
+        <article class="sheet-card left-sheet">
+          <div class="sheet-title">CRONOGRAMA DEL CONTRATO</div>
+          <div class="cronograma-info-bar" *ngIf="contrato.cuotas?.length">
+            <span>Cuotas: <strong>{{ contrato.cuotas.length }}</strong></span>
+            <span>Días de Retraso: <strong [class.text-moroso]="cronogramaDiasRetrasoMax(contrato) > 0">{{ cronogramaDiasRetrasoMax(contrato) }}</strong></span>
+            <span class="estado-pill moroso moroso-small" *ngIf="isMoroso(contrato)">MOROSO</span>
+          </div>
+          <table class="sheet-table">
+            <thead>
+              <tr>
+                <th>CUOTAS</th>
+                <th>FECHA DE PAGO EN CONTRATO</th>
+                <th>MONTO MENSUAL (RESTANTE)</th>
+                <th>MES</th>
+                <th>ESTADO DE PAGO</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cuota of contrato.cuotas; trackBy: trackByCuota" [class.fila-moroso]="cuota.diasRetraso > 0">
+                <td>{{ cuota.numeroCuota }}</td>
+                <td>{{ formatDate(cuota.fechaVencimiento) }}</td>
+                <td>{{ formatMoney(montoCuotaContratoVisual(cuota, contrato)) }}</td>
+                <td>{{ monthLabel(cuota.fechaVencimiento) }}</td>
+                <td>
+                  <span class="estado-pill block" [ngClass]="cuotaEstadoClass(cuota)">{{ cuota.estadoPago }}</span>
+                  <span class="estado-pill block moroso moroso-small" *ngIf="cuota.diasRetraso > 0">MOROSO</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      <section class="sheet-layout single-sheet" *ngIf="activeDetailTab === 'pagos' && mostrarTabPagosCuotas(contrato)">
+        <article class="sheet-card right-sheet">
+          <div class="sheet-title">DETALLE DE PAGOS EFECTUADOS</div>
+          <table class="sheet-table">
+            <thead>
+              <tr>
+                <th>FECHA DE PAGO</th>
+                <th>N° DE CUOTA</th>
+                <th>TIPO DE PAGO</th>
+                <th>MONTO</th>
+                <th>RECIBO ENTREGADO A CLIENTE</th>
+                <th>ESTADO DE PAGO</th>
+                <th>NOTAS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let detalle of detallePagosEfectuados(contrato); trackBy: trackByDetallePago">
+                <td>{{ formatDate(detalle.fechaPago) }}</td>
+                <td>{{ detalle.numeroCuota }}</td>
+                <td>{{ detalle.tipoPago }}</td>
+                <td>{{ formatMoney(detalle.monto) }}</td>
+                <td>SI</td>
+                <td>
+                  <span class="estado-pill block" [ngClass]="cuotaEstadoClassFromDetalle(detalle.estadoPago, detalle.diasRetraso)">
+                    {{ detalle.estadoPago }}
+                  </span>
+                </td>
+                <td>{{ detalle.notas }}</td>
+              </tr>
+              <tr *ngIf="!tieneDetallePagosEfectuados(contrato)">
+                <td colspan="7" class="sheet-empty-row">Aún no hay pagos de cuotas registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+    </section>
+    </section>
+    </ng-template>
+  </section>
+
+  <!-- Modal Amortizar -->
+  <div class="amortizar-overlay" *ngIf="amortizarModal.open" (click)="cerrarAmortizar()">
+    <div class="amortizar-modal" (click)="$event.stopPropagation()">
+      <div class="amortizar-modal-header">
+        <div>
+          <h3>{{ amortizarModal.modo === 'pago-cuota' ? 'Registrar pago de cuota' : 'Registrar Amortización' }}</h3>
+          <p class="amortizar-context-lbl">{{ amortizarContextLabel() }}</p>
+        </div>
+        <button class="amortizar-close" (click)="cerrarAmortizar()">&#x2715;</button>
+      </div>
+
+      <div class="amortizar-form">
+        <div class="amortizar-row">
+          <div class="amortizar-field">
+            <label>{{ amortizarModal.modo === 'pago-cuota' ? 'Monto de cuota (S/)' : 'Monto a amortizar (S/)' }}</label>
+            <input type="number" min="0.01" step="0.01" [(ngModel)]="amortizarModal.montoAmortizar" [disabled]="amortizarModal.montoFijo" />
+          </div>
+          <div class="amortizar-field">
+            <label>Fecha de pago</label>
+            <input type="date" [(ngModel)]="amortizarModal.fechaPago" />
+          </div>
+        </div>
+
+        <div class="amortizar-medios-section">
+          <div class="amortizar-medios-title">
+            <span>Medios de pago</span>
+            <button class="btn-add-medio" (click)="addMedio()">+ Agregar</button>
+          </div>
+
+          <div class="amortizar-empty-medio" *ngIf="amortizarModal.medios.length === 0">
+            Presiona &laquo;Agregar&raquo; para seleccionar el medio de pago
+          </div>
+
+          <div class="amortizar-medio-row" *ngFor="let medio of amortizarModal.medios">
+            <select [(ngModel)]="medio.medio" class="medio-select">
+              <option value="YAPE">Yape</option>
+              <option value="DEPOSITO">Depósito</option>
+              <option value="TRANSFERENCIA">Transferencia</option>
+              <option value="TARJETA">Tarjeta</option>
+              <option value="EFECTIVO">Efectivo</option>
+            </select>
+            <div class="medio-monto-group">
+              <label>S/</label>
+              <input type="number" min="0.01" step="0.01" [(ngModel)]="medio.monto" placeholder="0" class="medio-monto" />
+            </div>
+            <div class="efectivo-extra" *ngIf="medio.medio === 'EFECTIVO'">
+              <div class="con-group">
+                <label>Con S/</label>
+                <input type="number" min="0" step="1" [(ngModel)]="medio.efectivoEntregado" placeholder="0" class="medio-con" />
+              </div>
+              <span class="vuelto-badge" *ngIf="medio.efectivoEntregado > 0">
+                Vuelto: <strong>{{ formatMoney(vueltoEfectivo(medio)) }}</strong>
+              </span>
+            </div>
+            <button class="btn-remove-medio" (click)="removeMedio(medio.id)" title="Eliminar">&#x2715;</button>
+          </div>
+
+          <div class="amortizar-descripcion-box">
+            <label for="descripcionPago">Descripción del pago (máx. 150)</label>
+            <textarea
+              id="descripcionPago"
+              maxlength="150"
+              [(ngModel)]="amortizarModal.descripcion"
+              placeholder="Ejemplo: Pago parcial de cuota por transferencia"
+            ></textarea>
+            <small>{{ (amortizarModal.descripcion || '').length }}/150</small>
+          </div>
+        </div>
+
+        <div class="amortizar-totals">
+          <div class="total-row">
+            <span>Requerido:</span>
+            <strong>{{ formatMoney(amortizarModal.montoAmortizar) }}</strong>
+          </div>
+          <div class="total-row">
+            <span>Total recibido:</span>
+            <strong [class.total-ok]="montoIngresadoReal() === amortizarModal.montoAmortizar"
+                    [class.total-warn]="montoIngresadoReal() !== amortizarModal.montoAmortizar && montoIngresadoReal() > 0">
+              {{ formatMoney(montoIngresadoReal()) }}
+            </strong>
+          </div>
+          <div class="diferencia-row" *ngIf="amortizarModal.montoAmortizar > 0 && amortizarModal.montoAmortizar - totalAmortizar() > 0">
+            Faltante: <strong>{{ formatMoney(amortizarModal.montoAmortizar - totalAmortizar()) }}</strong>
+          </div>
+          <div class="diferencia-row exceso" *ngIf="vueltoGeneral() > 0">
+            Vuelto: <strong>{{ formatMoney(vueltoGeneral()) }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="amortizar-actions">
+        <button class="btn-clean" (click)="cerrarAmortizar()">Cancelar</button>
+        <button class="btn-search btn-confirmar-amortizar" (click)="abrirConfirmacionPago()" [disabled]="pagandoEnCurso || totalAmortizar() <= 0 || (amortizarModal.montoAmortizar <= 0)">
+          Confirmar {{ montoIngresadoReal() > 0 ? formatMoney(montoIngresadoReal()) : '' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="amortizar-overlay" *ngIf="confirmacionPago.open" (click)="cancelarConfirmacionPago()">
+    <div class="confirmar-pago-modal" (click)="$event.stopPropagation()">
+      <h3>Estas seguro de confirmar el pago?</h3>
+      <div class="confirmar-resumen-grid">
+        <div><strong>Fecha:</strong> {{ confirmacionPago.fechaPago | date:'dd/MM/yyyy' }}</div>
+        <div><strong>Requerido:</strong> {{ formatMoney(confirmacionPago.requerido) }}</div>
+        <div><strong>Total recibido:</strong> {{ formatMoney(confirmacionPago.recibido) }}</div>
+        <div><strong>Monto a registrar:</strong> {{ formatMoney(confirmacionPago.aplicable) }}</div>
+      </div>
+      <div class="confirmar-medios">
+        <strong>Medios:</strong> {{ confirmacionPago.mediosResumen }}
+      </div>
+      <div class="confirmar-actions">
+        <button class="btn-clean" (click)="cancelarConfirmacionPago()">No</button>
+        <button class="btn-search" (click)="confirmarPagoDesdeModal()" [disabled]="pagandoEnCurso">Si, confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de descuento simplificado -->
+  <div class="modal-backdrop" *ngIf="descuentoModal.open">
+    <div class="modal">
+      <h3>¿Cuánto será el monto a descontar?</h3>
+      <input type="number" min="1" [(ngModel)]="descuentoModal.monto" placeholder="Monto a descontar" />
+      <div class="modal-actions">
+        <button (click)="confirmarDescuento()" [disabled]="!descuentoModal.monto || descuentoModal.monto <= 0">Confirmar</button>
+        <button (click)="cerrarDescuentoModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+  <!-- Confirmación final -->
+  <div class="modal-backdrop" *ngIf="descuentoModal.confirm">
+    <div class="modal">
+      <h3>¿Estás seguro de aplicar el descuento?</h3>
+      <p>Se aplicará un descuento de <strong>{{ formatMoney(descuentoModal.monto) }}</strong> al cliente <strong>{{ selectedContrato?.clienteNombre }}</strong> sobre su deuda pendiente. ¿Deseas continuar?</p>
+      <div class="modal-actions">
+        <button (click)="aplicarDescuento()">Sí, aplicar</button>
+        <button (click)="descuentoModal.confirm = false">No</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification" *ngIf="notification?.type === 'error'">
+    <span class="notification-icon">!</span>
+    <span class="notification-text">{{ notification?.message }}</span>
+  </div>
+</div>

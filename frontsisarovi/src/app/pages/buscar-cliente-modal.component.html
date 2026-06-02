@@ -1,0 +1,167 @@
+<div class="modal-overlay" (click)="close()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <button class="btn-close" type="button" (click)="close()" aria-label="Cerrar">✕</button>
+
+    <div class="modal-hero">
+      <p class="modal-eyebrow">Búsqueda rápida</p>
+      <h3>Buscar Cliente</h3>
+      <p>Encuentra clientes por DNI, nombre o apellido y abre su cronograma, proforma o adquisición sin salir de aquí.</p>
+    </div>
+
+    <div class="search-source-toggle">
+      <button type="button" class="source-button" [class.active]="searchSource === 'USUARIOS'" (click)="setSearchSource('USUARIOS')">Usuarios</button>
+      <button type="button" class="source-button" [class.active]="searchSource === 'RENIEC'" (click)="setSearchSource('RENIEC')">Reniec</button>
+    </div>
+
+    <div class="search-input-row">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput($event)"
+        [placeholder]="searchSource === 'RENIEC' ? 'Ingrese DNI de 8 dígitos...' : 'Ingrese DNI, nombre o apellido...'"
+        [attr.maxlength]="searchSource === 'RENIEC' ? 8 : null"
+        [attr.inputmode]="searchSource === 'RENIEC' ? 'numeric' : 'text'"
+        (keyup.enter)="executeSearch()"
+        autocomplete="off"
+      />
+      <button type="button" class="btn-search" (click)="executeSearch()" [disabled]="searchLoading">Buscar</button>
+    </div>
+
+    <div class="search-hint">
+      <span *ngIf="searchSource === 'USUARIOS'">La búsqueda automática empieza desde 3 caracteres.</span>
+      <span *ngIf="searchSource === 'RENIEC'">La búsqueda en RENIEC se realiza al hacer clic en Buscar.</span>
+    </div>
+
+    <div *ngIf="searchError" class="error-message">{{ searchError }}</div>
+
+    <div *ngIf="searchLoading" class="loading-state">Buscando...</div>
+
+    <div *ngIf="searchResults.length > 0" class="results-list">
+      <article class="result-card" *ngFor="let cliente of searchResults">
+        <div class="result-head">
+          <div class="result-title-block">
+            <strong>{{ getNombreCompleto(cliente) }}</strong>
+            <span>{{ getDni(cliente) }}</span>
+          </div>
+          <span class="result-tag">{{ cliente.source }}</span>
+        </div>
+
+        <div class="result-details">
+          <span><b>Nombres:</b> {{ getNombres(cliente) }}</span>
+          <span><b>Apellidos:</b> {{ getApellidos(cliente) }}</span>
+          <span><b>Estado:</b> {{ cliente.estado }}</span>
+          <span *ngIf="cliente.projectNombre"><b>Proyecto:</b> {{ cliente.projectNombre }}</span>
+          <span *ngIf="cliente.parcelaNombre"><b>Ubicación:</b> E{{ cliente.etapaNumero }} · {{ cliente.parcelaNombre }} · {{ cliente.manzana }} · L{{ cliente.loteNumero }}</span>
+        </div>
+
+        <div class="result-actions">
+          <button type="button" class="btn-cronograma" *ngIf="cliente.loteNumero && cliente.loteNumero > 0" (click)="verCronograma(cliente)">Ver cronograma</button>
+          <button type="button" class="btn-acquire" (click)="openAdquisicionForClient(cliente)">Adquirir lote</button>
+          <button type="button" class="btn-proforma" (click)="openProformaForClient(cliente)">Realizar proforma</button>
+        </div>
+      </article>
+    </div>
+
+    <div *ngIf="!searchLoading && searchQuery.trim().length > 0 && searchResults.length === 0 && !searchError" class="empty-state">
+      No se encontraron clientes con ese criterio.
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay secondary" *ngIf="showProformaActionModal" (click)="closeProformaActionModal()">
+  <div class="modal-card proforma-card" (click)="$event.stopPropagation()">
+    <button class="btn-close" type="button" (click)="closeProformaActionModal()" aria-label="Cerrar">✕</button>
+    <div class="modal-hero compact">
+      <p class="modal-eyebrow">Proforma</p>
+      <h3>Selecciona el modo</h3>
+      <p>Elige si la proforma será libre o vinculada a un proyecto.</p>
+    </div>
+
+    <div class="mode-grid">
+      <button type="button" class="mode-card" [class.active]="selectedProformaMode === 'LIBRE'" (click)="selectedProformaMode = 'LIBRE'">
+        <strong>Proforma libre</strong>
+        <span>Sin asociar a un proyecto.</span>
+      </button>
+      <button type="button" class="mode-card" [class.active]="selectedProformaMode === 'PROYECTO'" (click)="selectedProformaMode = 'PROYECTO'">
+        <strong>Por proyecto</strong>
+        <span>Vinculada a un proyecto específico.</span>
+      </button>
+    </div>
+
+    <div class="selector-block" *ngIf="selectedProformaMode === 'PROYECTO'">
+      <label>Proyecto</label>
+      <select [(ngModel)]="selectedProformaProjectId">
+        <option [ngValue]="null">Seleccione proyecto</option>
+        <option *ngFor="let project of proformaProjects" [ngValue]="project.id">{{ project.nombre }}</option>
+      </select>
+    </div>
+
+    <div class="modal-footer footer-actions">
+      <button type="button" class="btn-cancel" (click)="closeProformaActionModal()">Cancelar</button>
+      <button type="button" class="btn-proforma" (click)="confirmProformaAction()">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay secondary" *ngIf="showAdquisicionModal" (click)="closeAdquisicionModal()">
+  <div class="modal-card acquisition-card" (click)="$event.stopPropagation()">
+    <button class="btn-close" type="button" (click)="closeAdquisicionModal()" aria-label="Cerrar">✕</button>
+    <div class="modal-hero compact">
+      <p class="modal-eyebrow">Adquirir lote</p>
+      <h3>Selecciona proyecto, etapa, parcela y lote</h3>
+      <p>La persona ya queda precargada al confirmar la selección.</p>
+    </div>
+
+    <div class="adq-grid" *ngIf="selectedClientForAdquisicion as client">
+      <div class="adq-summary">
+        <strong>{{ client.fullName }}</strong>
+        <span>DNI: {{ client.dni }}</span>
+        <span *ngIf="client.telefono">Teléfono: {{ client.telefono }}</span>
+        <span *ngIf="client.direccion">Dirección: {{ client.direccion }}</span>
+      </div>
+
+      <div class="selector-block">
+        <label>Proyecto</label>
+        <select [(ngModel)]="adquisicionSelector.projectId" (ngModelChange)="onAdquisicionProjectChange()">
+          <option [ngValue]="null">Seleccione proyecto</option>
+          <option *ngFor="let project of adquisicionProjects" [ngValue]="project.id">{{ project.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="selector-block">
+        <label>Etapa</label>
+        <select [(ngModel)]="adquisicionSelector.etapaId" (ngModelChange)="onAdquisicionEtapaChange()" [disabled]="!adquisicionSelector.projectId">
+          <option [ngValue]="null">Seleccione etapa</option>
+          <option *ngFor="let etapa of adquisicionEtapas" [ngValue]="etapa.id">Etapa {{ etapa.numeroEtapa }}</option>
+        </select>
+      </div>
+
+      <div class="selector-block">
+        <label>Parcela</label>
+        <select [(ngModel)]="adquisicionSelector.parcelaId" (ngModelChange)="onAdquisicionParcelaChange()" [disabled]="!adquisicionSelector.etapaId">
+          <option [ngValue]="null">Seleccione parcela</option>
+          <option *ngFor="let parcela of adquisicionParcelas" [ngValue]="parcela.id">{{ parcela.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="selector-block">
+        <label>Lote disponible</label>
+        <select [(ngModel)]="adquisicionSelector.loteId" [disabled]="!adquisicionSelector.parcelaId">
+          <option [ngValue]="null">Seleccione lote</option>
+          <option *ngFor="let lote of adquisicionLotesDisponibles" [ngValue]="lote.id">Lote {{ lote.numero }} - {{ lote.manzana }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="adquisicionSelectionLoading">Cargando opciones...</div>
+
+    <div class="modal-footer footer-actions">
+      <button type="button" class="btn-cancel" (click)="closeAdquisicionModal()">Cancelar</button>
+      <button type="button" class="btn-acquire" [disabled]="!adquisicionSelector.parcelaId || !adquisicionSelector.loteId" (click)="confirmarAdquisicionDesdeBusqueda()">Continuar</button>
+    </div>
+  </div>
+</div>

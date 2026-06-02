@@ -1,0 +1,253 @@
+<nav class="navbar">
+  <div class="navbar-content">
+    <div class="logo">
+      <h1>AROVI</h1>
+      <span class="subtitle">INMOBILIARIA</span>
+    </div>
+    <div class="user-menu">
+      <span class="welcome-name">{{ userName }}</span>
+      <button class="btn-menu" (click)="goToProfile()">👤 Mi Perfil</button>
+      <button class="btn-back" (click)="goToDashboard()">← Regresar</button>
+      <button class="btn-logout" (click)="logout()">🚪 Cerrar Sesión</button>
+    </div>
+  </div>
+</nav>
+
+<div class="gestion-usuarios-container">
+  <h2>Gestión de Usuarios</h2>
+  <p class="subtitle">Lista de usuarios pendientes y activos</p>
+
+  <div class="tabs">
+    <button 
+      class="tab" 
+      [class.active]="currentTab === 'pendientes'"
+      (click)="onTabChange('pendientes')">
+      Solicitudes Pendientes ({{ pendingUsers.length }})
+    </button>
+    <button 
+      class="tab" 
+      [class.active]="currentTab === 'espera'"
+      (click)="onTabChange('espera')">
+      En espera ({{ waitingUsers.length }})
+    </button>
+    <button *ngIf="isAdmin" 
+      class="tab" 
+      [class.active]="currentTab === 'todos'"
+      (click)="onTabChange('todos')">
+      Todos los Usuarios ({{ allUsers.length }})
+    </button>
+  </div>
+
+  <!-- Usuarios Pendientes -->
+  @if (currentTab === 'pendientes') {
+    <div class="users-section">
+      @if (pendingUsers.length === 0) {
+        <div class="empty-state">
+          <p>No hay solicitudes pendientes</p>
+        </div>
+      } @else {
+        <div class="users-grid">
+          @for (user of pendingUsers; track user.id) {
+            <div class="user-card pending">
+              <div class="user-header">
+                <div class="avatar">{{ getInitials(user) }}</div>
+                <div class="user-info">
+                  <h3>{{ user.nombres }} {{ user.primerApellido }}</h3>
+                  <p class="dni">DNI: {{ user.dni }}</p>
+                  <span class="status pending">⏳ Pendiente</span>
+                </div>
+              </div>
+              <div class="user-actions">
+                <button class="btn-approve" (click)="approveUser(user)">
+                  ✓ Aprobar
+                </button>
+                <button class="btn-reject" (click)="rejectUser(user)">
+                  ✗ Rechazar
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Usuarios en espera -->
+  @if (currentTab === 'espera') {
+    <div class="users-section">
+      @if (waitingUsers.length === 0) {
+        <div class="empty-state">
+          <p>No hay usuarios en tiempo de espera</p>
+        </div>
+      } @else {
+        <div class="users-grid">
+          @for (user of waitingUsers; track user.id) {
+            <div class="user-card waiting">
+              <div class="user-header">
+                <div class="avatar">{{ getInitials(user) }}</div>
+                <div class="user-info">
+                  <h3>{{ user.nombres }} {{ user.primerApellido }}</h3>
+                  <p class="dni">DNI: {{ user.dni }}</p>
+                  <span class="status waiting">⏳ {{ getWaitingLabel(user) }}</span>
+                </div>
+              </div>
+              <div class="user-actions">
+                <button class="btn-cancel-wait" (click)="cancelWaitingPeriod(user)">
+                  Cancelar espera
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Usuarios Activos -->
+  @if (currentTab === 'activos') {
+    <div class="users-section">
+      @if (activeUsers.length === 0) {
+        <div class="empty-state">
+          <p>No hay usuarios activos</p>
+        </div>
+      } @else {
+        <div class="users-grid">
+          @for (user of activeUsers; track user.id) {
+            <div class="user-card active">
+              <div class="user-header">
+                <div class="avatar">{{ getInitials(user) }}</div>
+                <div class="user-info">
+                  <h3>{{ user.nombres }} {{ user.primerApellido }}</h3>
+                  <p class="dni">DNI: {{ user.dni }}</p>
+                  <span class="role-badge" [class.admin]="user.role.name === 'ROLE_ADMIN'">
+                    {{ user.role.name === 'ROLE_ADMIN' ? '👑 Admin' : '👤 Usuario' }}
+                  </span>
+                </div>
+              </div>
+              <div class="user-actions">
+                  @if (user.role.name !== 'ROLE_ADMIN') {
+                    <button class="btn-promote" 
+                      [disabled]="user.estado !== 'ACTIVO'" 
+                      (click)="promoteUser(user.id)">
+                      ⬆️ Promover a Admin
+                    </button>
+                  }
+                <button class="btn-delete" (click)="deleteUser(user.id)">
+                  🗑️ Eliminar
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Todos los Usuarios (solo admin) -->
+  @if (isAdmin && currentTab === 'todos') {
+    <div class="users-section">
+      @if (allUsers.length === 0) {
+        <div class="empty-state">
+          <p>No hay usuarios en el sistema</p>
+        </div>
+      } @else {
+        <div class="users-grid">
+          @for (user of allUsers; track user.id) {
+            <div class="user-card">
+              <div class="user-header">
+                <div class="avatar">{{ getInitials(user) }}</div>
+                <div class="user-info">
+                  <h3>{{ user.nombres }} {{ user.primerApellido }}</h3>
+                  <p class="dni">DNI: {{ user.dni }}</p>
+                  <span class="role-badge" [class.admin]="user.role.name === 'ROLE_ADMIN'">
+                    {{ user.role.name === 'ROLE_ADMIN' ? '👑 Admin' : '👤 Usuario' }}
+                  </span>
+                  <span *ngIf="user.estado === 'PENDIENTE'" class="status pending">⏳ Pendiente</span>
+                  <span *ngIf="user.estado === 'RECHAZADO'" class="status rejected">❌ Rechazado</span>
+                </div>
+              </div>
+              <div class="user-actions">
+                @if (user.role.name !== 'ROLE_ADMIN' && user.estado === 'ACTIVO') {
+                  <button class="btn-promote" (click)="promoteUser(user.id)">
+                    ⬆️ Promover a Admin
+                  </button>
+                }
+                <button class="btn-delete" (click)="deleteUser(user.id)">
+                  🗑️ Eliminar
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal de confirmación -->
+@if (showDeleteModal) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Confirmar Eliminación</h3>
+      <p>Para eliminar este usuario, ingresa tu contraseña:</p>
+      <input 
+        type="password" 
+        [(ngModel)]="deletePassword" 
+        placeholder="Tu contraseña"
+        class="password-input"
+        (keyup.enter)="confirmDelete()">
+      @if (deleteError) {
+        <div class="error-message">{{ deleteError }}</div>
+      }
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+        <button class="btn-confirm" (click)="confirmDelete()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showActionModal && actionUser) {
+  <div class="modal-overlay" (click)="closeActionModal()">
+    <div class="modal confirm-modal" (click)="$event.stopPropagation()">
+      <h3>
+        @if (actionType === 'approve') {
+          Confirmar aprobación
+        } @else if (actionType === 'reject') {
+          Confirmar rechazo
+        } @else {
+          Cancelar tiempo de espera
+        }
+      </h3>
+      <p>
+        @if (actionType === 'approve') {
+          Se aprobará a <strong>{{ actionUser.nombres }} {{ actionUser.primerApellido }}</strong> con DNI {{ actionUser.dni }}.
+        } @else if (actionType === 'reject') {
+          Se rechazará a <strong>{{ actionUser.nombres }} {{ actionUser.primerApellido }}</strong> con DNI {{ actionUser.dni }} y quedará en espera por 12 horas.
+        } @else {
+          Se cancelará el tiempo de espera del DNI {{ actionUser.dni }} y podrá volver a registrarse de inmediato.
+        }
+      </p>
+      @if (actionError) {
+        <div class="error-message">{{ actionError }}</div>
+      }
+      <div class="modal-actions">
+        <button
+          class="btn-action-primary"
+          [class.btn-approve-action]="actionType === 'approve'"
+          [class.btn-reject-action]="actionType === 'reject'"
+          [class.btn-cancel-wait-action]="actionType === 'cancel-wait'"
+          (click)="confirmAction()">
+          @if (actionType === 'approve') {
+            Aprobar
+          } @else if (actionType === 'reject') {
+            Rechazar
+          } @else {
+            Cancelar espera
+          }
+        </button>
+        <button class="btn-cancel-action" (click)="closeActionModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+}

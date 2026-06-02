@@ -1,0 +1,517 @@
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { LoteService } from '../../services/lote.service';
+import { ParcelaService } from '../../services/parcela.service';
+import { Lote, LoteRequest } from '../../models/lote.model';
+import { Parcela } from '../../models/parcela.model';
+
+@Component({
+  selector: 'app-lotes',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './lotes.component.html',
+  styleUrls: ['./lotes.component.css'],
+  changeDetection: ChangeDetectionStrategy.Default
+})
+export class LotesComponent implements OnInit {
+  parcelaId!: number;
+  parcela: Parcela | null = null;
+  lotes: Lote[] = [];
+  selectedManzana: string = 'Todas';
+  manzanas: string[] = [];
+  loading: boolean = false;
+  showModal: boolean = false;
+  modalMode: 'create' | 'edit' = 'create';
+  modalTitle: string = '';
+  currentLote: Lote | null = null;
+  manzanaLocked: boolean = false;
+
+  formData: LoteRequest = {
+    numero: 1,
+    calle: '',
+    perimetro: 0,
+    areaM2: 0,
+    medidaFrente: 0,
+    medidaIzquierda: 0,
+    medidaDerecha: 0,
+    medidaFondo: 0,
+    numeroPartida: '',
+    propietario: '',
+    nuevoPropietario: '',
+    manzana: 'A'
+  };
+
+  formErrors: any = {
+    numero: '',
+    calle: '',
+    perimetro: '',
+    areaM2: '',
+    medidaFrente: '',
+    medidaIzquierda: '',
+    medidaDerecha: '',
+    medidaFondo: '',
+    numeroPartida: '',
+    propietario: '',
+    manzana: '',
+    general: ''
+  };
+
+  constructor(
+    private loteService: LoteService,
+    private parcelaService: ParcelaService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    try {
+      const parcelaIdParam = this.route.snapshot.params['parcelaId'];
+      this.parcelaId = +parcelaIdParam;
+      
+      if (this.parcelaId && !isNaN(this.parcelaId)) {
+        this.loadParcelaInfo();
+        this.loadLotes();
+      } else {
+        console.error('ParcelaId inválido:', parcelaIdParam);
+        this.router.navigate(['/dashboard']);
+      }
+      
+      this.route.params.subscribe(params => {
+        const newParcelaId = +params['parcelaId'];
+        if (newParcelaId !== this.parcelaId && !isNaN(newParcelaId)) {
+          this.parcelaId = newParcelaId;
+          this.loadParcelaInfo();
+          this.loadLotes();
+        }
+      });
+    } catch (error) {
+      console.error('Error en ngOnInit:', error);
+      this.router.navigate(['/dashboard']);
+    }
+  }
+
+  loadParcelaInfo(): void {
+    this.parcelaService.getParcelaById(this.parcelaId).subscribe({
+      next: (parcela: Parcela) => {
+        this.parcela = parcela;
+        this.generateManzanasFromParcela();
+        setTimeout(() => {
+          this.cdr.detectChanges();
+        }, 0);
+      },
+      error: (error: any) => {
+        console.error('Error al cargar información de parcela:', error);
+        // Generar manzanas por defecto en caso de error
+        this.manzanas = ['Todas', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+        this.showErrorMessage('Error al cargar información de la parcela');
+      }
+    });
+  }
+
+  loadLotes(): void {
+    this.loading = true;
+    this.lotes = [];
+    this.cdr.markForCheck();
+    
+    this.loteService.getLotesByParcela(this.parcelaId).subscribe({
+      next: (data: Lote[]) => {
+        setTimeout(() => {
+          this.lotes = data;
+          // NO llamar generateManzanas() - ya se generaron desde la parcela
+          this.loading = false;
+          this.cdr.markForCheck();
+          this.cdr.detectChanges();
+        }, 0);
+      },
+      error: (error: any) => {
+        console.error('Error al cargar lotes:', error);
+        this.showErrorMessage('Error al cargar los lotes');
+        this.loading = false;
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  trackByLoteId(index: number, lote: Lote): number {
+    return lote.id;
+  }try {
+      if (!this.parcela) {
+        console.warn('No hay información de parcela disponible');
+        return;
+      }
+      
+      const numManzanas = this.parcela.numManzanas || 0;
+      const manzanasArray: string[] = ['Todas'];
+      
+      // Generar letras de manzanas de manera ascendente: A, B, C... F, G, H
+      for (let i = 0; i < numManzanas; i++) {
+        manzanasArray.push(this.obtenerLetraManzana(i));
+      }
+      
+      this.manzanas = manzanasArray;
+      console.log('Manzanas generadas:', this.manzanas);
+    } catch (error) {
+      console.error('Error al generar manzanas:', error);
+      this.manzanas = ['Todas', 'A'];
+    }nerLetraManzana(i));
+    }
+    
+    this.manzanas = manzanasArray;
+  }
+
+  obtenerLetraManzana(indice: number): string {
+    if (indice < 26) {
+      return String.fromCharCode(65 + indice); // A-Z
+    } else {
+      const primera = Math.floor(indice / 26) - 1;
+      const segunda = indice % 26;
+      return String.fromCharCode(65 + primera) + String.fromCharCode(65 + segunda);
+    }
+  }
+
+  generateManzanas(): void {
+    const manzanasSet = new Set(this.lotes.map(lote => lote.manzana));
+    this.manzanas = ['Todas', ...Array.from(manzanasSet).sort().reverse()];
+  }
+
+  // Obtiene lista de manzanas sin "Todas" para mostrar verticalmente
+  getManzanasDescendentes(): string[] {
+    return this.manzanas.filter(m => m !== 'Todas');
+  }
+
+  // Obtiene lotes de una manzana específica
+  getLotesByManzana(manzana: string): Lote[] {
+    return this.lotes
+      .filter(lote => lote.manzana === manzana)
+      .sort((a, b) => a.numero - b.numero); // Ordenar por número ascendente
+  }
+
+  filterLotesByManzana(): Lote[] {
+    let lotesToShow: Lote[] = [];
+    
+    if (this.selectedManzana === 'Todas') {
+      lotesToShow = [...this.lotes];
+    } else {
+      lotesToShow = this.lotes.filter(lote => lote.manzana === this.selectedManzana);
+    }
+    
+    // Ordenar de manera descendente por manzana (H, G, F... C, B, A) y luego por número descendente
+    return lotesToShow.sort((a, b) => {
+      // Primero comparar por manzana (descendente)
+      const manzanaCompare = b.manzana.localeCompare(a.manzana);
+      if (manzanaCompare !== 0) {
+        return manzanaCompare;
+      }
+      // Si son de la misma manzana, ordenar por número (descendente)
+      return b.numero - a.numero;
+    });
+  }
+
+  openCreateModal(): void {
+    this.modalMode = 'create';
+    this.modalTitle = '➕ Nuevo Lote';
+    this.resetForm();
+    this.manzanaLocked = false;
+    this.showModal = true;
+  }
+
+  openCreateModalForManzana(manzana: string): void {
+    this.modalMode = 'create';
+    this.modalTitle = `➕ Nuevo Lote en Manzana ${manzana}`;
+    this.resetForm();
+    this.formData.manzana = manzana;
+    this.manzanaLocked = true;
+    console.log('Manzana bloqueada:', this.manzanaLocked, 'Manzana:', manzana);
+    this.showModal = true;
+    this.cdr.detectChanges();
+  }
+
+  openEditModal(lote: Lote): void {
+    this.modalMode = 'edit';
+    this.modalTitle = '✏️ Editar Lote';
+    this.currentLote = lote;
+    this.formData = {
+      numero: lote.numero,
+      calle: lote.calle,
+      perimetro: lote.perimetro,
+      areaM2: lote.areaM2,
+      medidaFrente: lote.medidaFrente,
+      medidaIzquierda: lote.medidaIzquierda,
+      medidaDerecha: lote.medidaDerecha,
+      medidaFondo: lote.medidaFondo,
+      numeroPartida: lote.numeroPartida,
+      propietario: lote.propietario,
+      nuevoPropietario: lote.nuevoPropietario || '',
+      manzana: lote.manzana
+    };
+    this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.showModal = false;
+    this.resetForm();
+    this.currentLote = null;
+    this.manzanaLocked = false;
+  }
+
+  resetForm(): void {
+    this.formData = {
+      numero: 1,
+      calle: '',
+      perimetro: 0,
+      areaM2: 0,
+      medidaFrente: 0,
+      medidaIzquierda: 0,
+      medidaDerecha: 0,
+      medidaFondo: 0,
+      numeroPartida: '',
+      propietario: '',
+      nuevoPropietario: '',
+      manzana: 'A'
+    };
+    this.formErrors = {
+      numero: '',
+      calle: '',
+      perimetro: '',
+      areaM2: '',
+      medidaFrente: '',
+      medidaIzquierda: '',
+      medidaDerecha: '',
+      medidaFondo: '',
+      numeroPartida: '',
+      propietario: '',
+      manzana: '',
+      general: ''
+    };
+  }
+
+  validateForm(): boolean {
+    let valid = true;
+    this.formErrors = {
+      numero: '',
+      calle: '',
+      perimetro: '',
+      areaM2: '',
+      medidaFrente: '',
+      medidaIzquierda: '',
+      medidaDerecha: '',
+      medidaFondo: '',
+      numeroPartida: '',
+      propietario: '',
+      manzana: '',
+      general: ''
+    };
+
+    if (!this.formData.numero || this.formData.numero < 1) {
+      this.formErrors.numero = 'El número de lote es requerido y debe ser mayor a 0';
+      valid = false;
+    }
+
+    // Validar si el número de lote ya existe en esta manzana
+    if (this.formData.numero && this.formData.manzana) {
+      const loteExistente = this.lotes.find(l => 
+        l.manzana === this.formData.manzana && 
+        l.numero === this.formData.numero &&
+        (this.modalMode === 'create' || l.id !== this.currentLote?.id)
+      );
+      if (loteExistente) {
+        this.formErrors.numero = `Ya existe el Lote ${this.formData.numero} en la Manzana ${this.formData.manzana}`;
+        valid = false;
+      }
+    }
+
+    // Validar si el número de partida ya existe
+    if (this.formData.numeroPartida && this.formData.numeroPartida.trim() !== '') {
+      const partidaExistente = this.lotes.find(l => 
+        l.numeroPartida === this.formData.numeroPartida &&
+        (this.modalMode === 'create' || l.id !== this.currentLote?.id)
+      );
+      if (partidaExistente) {
+        this.formErrors.numeroPartida = `El Número de Partida ${this.formData.numeroPartida} ya está registrado`;
+        valid = false;
+      }
+    }
+
+    if (!this.formData.calle || this.formData.calle.trim() === '') {
+      this.formErrors.calle = 'La calle es requerida';
+      valid = false;
+    }
+
+    if (!this.formData.propietario || this.formData.propietario.trim() === '') {
+      this.formErrors.propietario = 'El propietario es requerido';
+      valid = false;
+    }
+
+    if (!this.formData.manzana || this.formData.manzana.trim() === '') {
+      this.formErrors.manzana = 'La manzana es requerida';
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  validateNumeroLote(): void {
+    this.formErrors.numero = '';
+    
+    if (!this.formData.numero || this.formData.numero < 1) {
+      this.formErrors.numero = 'El número de lote debe ser mayor a 0';
+      return;
+    }
+
+    // Validar si el número de lote ya existe en esta manzana
+    if (this.formData.numero && this.formData.manzana) {
+      const loteExistente = this.lotes.find(l => 
+        l.manzana === this.formData.manzana && 
+        l.numero === this.formData.numero &&
+        (this.modalMode === 'create' || l.id !== this.currentLote?.id)
+      );
+      if (loteExistente) {
+        this.formErrors.numero = 'Lote ' + this.formData.numero + ' ya existe en Manzana ' + this.formData.manzana;
+      }
+    }
+  }
+
+  validateNumeroPartida(): void {
+    this.formErrors.numeroPartida = '';
+    
+    if (this.formData.numeroPartida && this.formData.numeroPartida.trim() !== '') {
+      const partidaExistente = this.lotes.find(l => 
+        l.numeroPartida === this.formData.numeroPartida &&
+        (this.modalMode === 'create' || l.id !== this.currentLote?.id)
+      );
+      if (partidaExistente) {
+        this.formErrors.numeroPartida = 'Numero de Partida ' + this.formData.numeroPartida + ' ya registrado';
+      }
+    }
+  }
+
+  onSubmit(): void {
+    if (!this.validateForm()) {
+      return;
+    }
+
+    this.loading = true;
+
+    if (this.modalMode === 'create') {
+      this.loteService.createLote(this.parcelaId, this.formData).subscribe({
+        next: (response: Lote) => {
+          this.showSuccessMessage('Lote creado exitosamente');
+          this.loadLotes();
+          this.closeModal();
+        },
+        error: (error: any) => {
+          console.error('Error al crear lote:', error);
+          this.formErrors.general = error.error?.message || 'Error al crear el lote';
+          this.loading = false;
+          this.cdr.detectChanges();
+        }
+      });
+    } else {
+      if (this.currentLote) {
+        this.loteService.updateLote(this.parcelaId, this.currentLote.id, this.formData).subscribe({
+          next: (response: Lote) => {
+            this.showSuccessMessage('Lote actualizado exitosamente');
+            this.loadLotes();
+            this.closeModal();
+          },
+          error: (error: any) => {
+            console.error('Error al actualizar lote:', error);
+            this.formErrors.general = error.error?.message || 'Error al actualizar el lote';
+            this.loading = false;
+            this.cdr.detectChanges();
+          }
+        });
+      }
+    }
+  }
+
+  deleteLote(lote: Lote): void {
+    if (confirm(`¿Está seguro de eliminar el Lote ${lote.numero} de la Manzana ${lote.manzana}?`)) {
+      this.loading = true;
+      this.loteService.deleteLote(this.parcelaId, lote.id).subscribe({
+        next: () => {
+          this.showSuccessMessage('Lote eliminado exitosamente');
+          this.loadLotes();
+        },
+        error: (error: any) => {
+          console.error('Error al eliminar lote:', error);
+          this.showErrorMessage('Error al eliminar el lote');
+          this.loading = false;
+          this.cdr.detectChanges();
+        }
+      });
+    }
+  }
+
+  goBack(): void {
+    this.router.navigate(['/gestion-proyectos']);
+  }
+
+  showSuccessMessage(message: string): void {
+    const successDiv = document.createElement('div');
+    successDiv.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+      color: white;
+      padding: 1.5rem 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      font-size: 1.1rem;
+      font-weight: 600;
+      animation: slideInRight 0.4s ease-out;
+    `;
+    successDiv.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.5rem;">✅</span>
+        <span>${message}</span>
+      </div>
+    `;
+    document.body.appendChild(successDiv);
+
+    setTimeout(() => {
+      successDiv.style.animation = 'slideInRight 0.4s ease-out reverse';
+      setTimeout(() => {
+        document.body.removeChild(successDiv);
+      }, 400);
+    }, 3000);
+  }
+
+  showErrorMessage(message: string): void {
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #f44336 0%, #da190b 100%);
+      color: white;
+      padding: 1.5rem 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      font-size: 1.1rem;
+      font-weight: 600;
+      animation: slideInRight 0.4s ease-out;
+    `;
+    errorDiv.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.5rem;">⚠️</span>
+        <span>${message}</span>
+      </div>
+    `;
+    document.body.appendChild(errorDiv);
+
+    setTimeout(() => {
+      errorDiv.style.animation = 'slideInRight 0.4s ease-out reverse';
+      setTimeout(() => {
+        document.body.removeChild(errorDiv);
+      }, 400);
+    }, 3000);
+  }
+}

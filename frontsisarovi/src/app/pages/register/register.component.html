@@ -1,0 +1,186 @@
+﻿<div class="register-container">
+    <div *ngIf="toastError" class="toast-error">
+      {{ toastError }}
+    </div>
+  <div class="register-card">
+    <!-- Mensaje de advertencia se moverá arriba del botón de registro -->
+    <div class="logo-section">
+      <h1 class="logo-title">AROVI</h1>
+      <p class="logo-subtitle">INMOBILIARIA</p>
+    </div>
+    
+    <h2>Crear Cuenta</h2>
+    
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <!-- ...campos del formulario... -->
+      <!-- Campos de datos personales -->
+      <!-- ...campos existentes... -->
+
+      <!-- Mensaje de advertencia eliminado para evitar duplicidad -->
+      <div class="form-group">
+        <label for="dni">DNI</label>
+        <input 
+          type="text" 
+          id="dni" 
+          name="dni"
+          [(ngModel)]="registerData.dni"
+          (ngModelChange)="onFieldChange()"
+          required
+          [disabled]="loading"
+          placeholder="12345678"
+          maxlength="8"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Correo</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          [(ngModel)]="registerData.email"
+          (ngModelChange)="onFieldChange('email')"
+          required
+          [disabled]="loading"
+          placeholder="correo@dominio.com"
+          [ngClass]="{'input-error': fieldErrors['email']}"
+        />
+        <div *ngIf="fieldErrors['email']" class="error-message">{{ fieldErrors['email'] }}</div>
+      </div>
+
+
+      <div class="form-group">
+        <label for="nombres">Nombres completos</label>
+        <input
+          type="text"
+          id="nombres"
+          name="nombres"
+          [(ngModel)]="registerData.nombres"
+          (ngModelChange)="onFieldChange()"
+          required
+          [disabled]="loading"
+          placeholder="Juan Carlos"
+          [ngClass]="{'input-error': fieldErrors['nombres']}"
+        />
+        <div *ngIf="fieldErrors['nombres']" class="error-message">{{ fieldErrors['nombres'] }}</div>
+      </div>
+
+      <div class="form-group">
+        <label for="primerApellido">Primer Apellido</label>
+        <input 
+          type="text" 
+          id="primerApellido" 
+          name="primerApellido"
+          [(ngModel)]="registerData.primerApellido"
+          (ngModelChange)="onFieldChange()"
+          required
+          [disabled]="loading"
+          placeholder="Pérez"
+          [ngClass]="{'input-error': fieldErrors['primerApellido']}"
+        />
+        <div *ngIf="fieldErrors['primerApellido']" class="error-message">{{ fieldErrors['primerApellido'] }}</div>
+      </div>
+
+      <div class="form-group">
+        <label for="segundoApellido">Segundo Apellido</label>
+        <input 
+          type="text" 
+          id="segundoApellido" 
+          name="segundoApellido"
+          [(ngModel)]="registerData.segundoApellido"
+          (ngModelChange)="onFieldChange()"
+          [disabled]="loading"
+          placeholder="García"
+          [ngClass]="{'input-error': fieldErrors['segundoApellido']}"
+        />
+        <div *ngIf="fieldErrors['segundoApellido']" class="error-message">
+          {{ fieldErrors['segundoApellido'] }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <div class="password-wrapper password-right">
+          <input 
+            [type]="showPassword ? 'text' : 'password'"
+            id="password" 
+            name="password"
+            [(ngModel)]="registerData.password"
+            (ngModelChange)="onFieldChange()"
+            required
+            [disabled]="loading"
+            placeholder=""
+          />
+          <button type="button" class="eye-btn eye-right" (click)="togglePasswordVisibility()" tabindex="-1">
+            <span *ngIf="showPassword">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24"><path stroke="#8B1538" stroke-width="2" d="M3 12s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/><circle cx="12" cy="12" r="3" stroke="#8B1538" stroke-width="2"/></svg>
+            </span>
+            <span *ngIf="!showPassword">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24"><path stroke="#8B1538" stroke-width="2" d="M3 12s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/><circle cx="12" cy="12" r="3" stroke="#8B1538" stroke-width="2"/><line x1="4" y1="4" x2="20" y2="20" stroke="#8B1538" stroke-width="2"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirmar Contraseña</label>
+        <div class="password-wrapper password-right">
+          <input 
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            id="confirmPassword" 
+            name="confirmPassword"
+            [(ngModel)]="confirmPassword"
+            (ngModelChange)="onFieldChange()"
+            required
+            [disabled]="loading"
+            placeholder=""
+          />
+          <button type="button" class="eye-btn eye-right" (click)="toggleConfirmPasswordVisibility()" tabindex="-1">
+            <span *ngIf="showConfirmPassword">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24"><path stroke="#8B1538" stroke-width="2" d="M3 12s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/><circle cx="12" cy="12" r="3" stroke="#8B1538" stroke-width="2"/></svg>
+            </span>
+            <span *ngIf="!showConfirmPassword">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24"><path stroke="#8B1538" stroke-width="2" d="M3 12s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/><circle cx="12" cy="12" r="3" stroke="#8B1538" stroke-width="2"/><line x1="4" y1="4" x2="20" y2="20" stroke="#8B1538" stroke-width="2"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mensaje de advertencia y línea roja exactamente debajo de los campos de contraseña -->
+      <div class="dni-warning-section">
+        <div *ngIf="error" class="error-message" style="margin-bottom: 0.5rem;">
+          {{ error }}
+        </div>
+        <div class="dni-warning-message">
+          <span class="dni-warning-icon">&#9888;</span>
+          <span>
+            Los datos deben ser <b>iguales que en tu DNI</b> (nombres y apellidos). Si hay algún error, no podrás registrarte.
+          </span>
+        </div>
+        <div class="dni-warning-line"></div>
+      </div>
+
+      <div *ngIf="passwordMismatch" class="error-message">
+        Las contraseñas no coinciden
+      </div>
+
+      <div *ngIf="success" class="success-message">
+        {{ success }}
+      </div>
+
+      <button 
+        type="submit" 
+        [disabled]="loading || passwordMismatch"
+        class="btn-register-beautiful"
+      >
+        <span *ngIf="loading" class="spinner"></span>
+        <span *ngIf="!loading">Registrarse</span>
+      </button>
+      <div style="grid-column: 1 / -1; text-align: center; margin-top: 0.5rem;">
+        <span style="color: #666; font-size: 0.95rem;">¿Ya tiene cuenta? </span>
+        <a routerLink="/login" style="color: #8B1538; text-decoration: none; font-weight: 600; transition: color 0.3s ease;">Iniciar Sesión</a>
+      </div>
+    </form>
+  </div>
+</div>
+

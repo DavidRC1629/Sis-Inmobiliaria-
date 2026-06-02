@@ -1,0 +1,24 @@
+<div class="modal" *ngIf="true">
+  <div class="modal-shell">
+    <h3>Registrar Adquisición</h3>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-row">
+        <label>Fecha *</label>
+        <input type="date" formControlName="fecha" required />
+      </div>
+      <div class="form-row">
+        <label>Monto *</label>
+        <input type="number" formControlName="monto" required />
+      </div>
+      <div class="form-row">
+        <label>Descripción</label>
+        <textarea formControlName="descripcion"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="button" (click)="close.emit()" class="btn-cancelar">Cancelar</button>
+        <button type="submit" [disabled]="form.invalid || loading" class="btn-registrar">Registrar</button>
+      </div>
+      <div *ngIf="errorMsg" class="error">{{ errorMsg }}</div>
+    </form>
+  </div>
+</div>

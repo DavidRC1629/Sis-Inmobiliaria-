@@ -1,0 +1,176 @@
+<div class="dashboard-shell">
+  <header class="topbar">
+    <div class="brand-block">
+      <button type="button" class="sidebar-toggle" (click)="toggleSidebar()" [attr.aria-expanded]="sidebarVisible" aria-label="Mostrar u ocultar menú lateral">☰</button>
+      <div class="brand-mark">
+        <span class="brand-name">{{ appBrand.name }}</span>
+        <span class="brand-subtitle">{{ appBrand.subtitle }}</span>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <button type="button" class="btn-search" (click)="searchClient()">🔍 Buscar Cliente</button>
+      <span class="welcome-text">Bienvenido, {{ displayName }}</span>
+      <button type="button" class="btn-menu" (click)="goToProfile()">👤 Mi Perfil</button>
+      <button type="button" class="btn-logout" (click)="logout()">🚪 Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <div class="layout" [class.sidebar-hidden]="!sidebarVisible">
+    <aside class="sidebar" *ngIf="sidebarVisible">
+      <div class="sidebar-search">
+        <input type="text" [(ngModel)]="sidebarSearch" placeholder="Buscar..." />
+      </div>
+
+      <nav class="sidebar-nav">
+        <button type="button" class="nav-item active" (click)="goToDashboard()" *ngIf="matchesSearch('Dashboard')">
+          <span>📊 Dashboard</span>
+        </button>
+
+        <button type="button" class="nav-item" (click)="goToProyectos()" *ngIf="matchesSearch('Proyectos')">
+          <span>📁 Proyectos</span>
+        </button>
+
+        <button type="button" class="nav-item" (click)="goToLotesPropios()" *ngIf="matchesSearch('Lotes')">
+          <span>📍 Lotes</span>
+        </button>
+
+        <button type="button" class="nav-item" (click)="goToCronogramas()" *ngIf="matchesSearch('Cronogramas')">
+          <span>📅 Cronogramas</span>
+        </button>
+
+        <button type="button" class="nav-item" (click)="goToClientes()" *ngIf="matchesSearch('Clientes')">
+          <span>👥 Clientes</span>
+        </button>
+
+        <div class="nav-group" *ngIf="matchesSearch('Liberación') || matchesSearch('Devolución')">
+          <button type="button" class="nav-item group-toggle" (click)="toggleGroup('liberacion')">
+            <span>🏗️ Liberación</span>
+            <span class="chevron" [class.open]="expandedGroups.liberacion">›</span>
+          </button>
+          <div class="group-items" *ngIf="expandedGroups.liberacion">
+            <button type="button" class="sub-item" (click)="goToLiberacion()" *ngIf="matchesSearch('Liberación')">
+              Liberación
+            </button>
+            <button type="button" class="sub-item" (click)="goToControlDevoluciones()" *ngIf="matchesSearch('Devolución')">
+              Control de devoluciones
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-group" *ngIf="matchesSearch('Proformas') || matchesSearch('Historial')">
+          <button type="button" class="nav-item group-toggle" (click)="toggleGroup('proformas')">
+            <span>🧾 Proformas</span>
+            <span class="chevron" [class.open]="expandedGroups.proformas">›</span>
+          </button>
+          <div class="group-items" *ngIf="expandedGroups.proformas">
+            <button type="button" class="sub-item" (click)="goToProformas()" *ngIf="matchesSearch('Proformas')">
+              Proformas
+            </button>
+            <button type="button" class="sub-item" (click)="goToHistorialProformas()" *ngIf="matchesSearch('Historial')">
+              Historial
+            </button>
+          </div>
+        </div>
+
+        <button type="button" class="nav-item" (click)="goToGestionUsuarios()" *ngIf="matchesSearch('Usuarios')">
+          <span>👤 Usuarios</span>
+        </button>
+
+        <button type="button" class="nav-item" (click)="goToRegistro()" *ngIf="matchesSearch('Registro')">
+          <span>📝 Registro</span>
+        </button>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <section class="hero-card">
+        <div>
+          <p class="eyebrow">Panel principal</p>
+          <h1>Dashboard</h1>
+          <p>
+            Accede a los módulos operativos del sistema y revisa en un vistazo el estado general del proyecto.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <div class="hero-badge">{{ isAdmin ? 'Perfil administrador' : 'Perfil usuario' }}</div>
+        </div>
+      </section>
+
+      <section class="metrics-grid" [class.loading]="loadingSummary">
+        <article class="metric-card">
+          <span class="metric-label">Proyectos</span>
+          <strong class="metric-value">{{ summaryCards.projects }}</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-label">Clientes</span>
+          <strong class="metric-value">{{ summaryCards.clients }}</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-label">Lotes vendidos</span>
+          <strong class="metric-value">{{ summaryCards.lotsSold }}</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-label">Proformas</span>
+          <strong class="metric-value">{{ summaryCards.proformas }}</strong>
+        </article>
+      </section>
+
+      <section class="insights-grid">
+        <article class="panel chart-panel">
+          <div class="panel-head">
+            <h2>Ventas por mes</h2>
+            <span>Próximamente</span>
+          </div>
+          <div class="chart-placeholder">
+            <div class="chart-lines">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <p>El espacio queda listo para integrar estadísticas cuando el sistema esté completo.</p>
+          </div>
+        </article>
+
+        <article class="panel donut-panel">
+          <div class="panel-head">
+            <h2>Estado de lotes</h2>
+            <span>Opcional</span>
+          </div>
+          <div class="donut-wrap">
+            <div class="donut-shell">
+              <div class="donut-core">
+                <strong>100%</strong>
+                <span>Listo para datos finales</span>
+              </div>
+            </div>
+            <div class="legend-list">
+              <div><span class="legend-dot available"></span> Disponibles</div>
+              <div><span class="legend-dot reserved"></span> Reservados</div>
+              <div><span class="legend-dot sold"></span> Vendidos</div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel quick-actions-panel">
+        <div class="panel-head">
+          <h2>Acciones rápidas</h2>
+        </div>
+        <div class="quick-actions-grid">
+          <button type="button" class="action-button" (click)="goToProyectos()">📁 Crear Proyecto</button>
+          <button type="button" class="action-button" (click)="goToClientes()">👤 Registrar Cliente</button>
+          <button type="button" class="action-button" (click)="goToProformas()">🧾 Nueva Proforma</button>
+          <button type="button" class="action-button" (click)="goToLiberacion()">🏗️ Liberación</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <app-buscar-cliente-modal
+    *ngIf="showSearchModal"
+    (clienteSeleccionado)="onClienteSeleccionado($event)"
+    (cerrar)="closeSearchModal()">
+  </app-buscar-cliente-modal>
+</div>

@@ -1,0 +1,69 @@
+<div class="form-modal" *ngIf="visible">
+  <div class="form-shell">
+    <h3>Crear Lote Propio</h3>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-row">
+        <label>Número de Lote *</label>
+        <input type="number" formControlName="numeroLote" required />
+      </div>
+      <div class="form-row">
+        <label>Calle</label>
+        <input type="text" formControlName="calle" />
+      </div>
+      <div class="form-row">
+        <label>Área (m²)</label>
+        <input type="number" formControlName="areaM2" />
+      </div>
+      <div class="form-row">
+        <label>Perímetro</label>
+        <input type="number" formControlName="perimetro" />
+      </div>
+      <div class="form-row">
+        <label>Medida Frente</label>
+        <input type="number" formControlName="medidaFrente" />
+      </div>
+      <div class="form-row">
+        <label>Medida Fondo</label>
+        <input type="number" formControlName="medidaFondo" />
+      </div>
+      <div class="form-row">
+        <label>Medida Izquierda</label>
+        <input type="number" formControlName="medidaIzquierda" />
+      </div>
+      <div class="form-row">
+        <label>Medida Derecha</label>
+        <input type="number" formControlName="medidaDerecha" />
+      </div>
+      <div class="form-row">
+        <label>Número de Partida *</label>
+        <input
+          type="text"
+          formControlName="numeroPartida"
+          maxlength="8"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          (input)="onNumeroPartidaInput($event)"
+          (blur)="checkNumeroPartida()"
+          required />
+        <span *ngIf="checkingPartida">Verificando...</span>
+        <span *ngIf="form.get('numeroPartida')?.hasError('pattern')" class="error">Solo se permiten números</span>
+        <span *ngIf="form.get('numeroPartida')?.hasError('maxlength')" class="error">Máximo 8 dígitos</span>
+        <span *ngIf="partidaExists" class="error">Ya existe un terreno con ese número de partida</span>
+      </div>
+      <div class="form-row">
+        <label>Precio *</label>
+        <input type="number" formControlName="precio" required />
+      </div>
+      <div class="form-row">
+        <label>Propietario *</label>
+        <input type="number" formControlName="propietarioId" required />
+        <!-- Aquí puede ir un selector de cliente -->
+      </div>
+      <div class="form-actions">
+        <button type="button" (click)="close.emit()" class="btn-cancelar">Cancelar</button>
+        <button type="submit" [disabled]="form.invalid || partidaExists" class="btn-crear">Crear</button>
+      </div>
+      <div *ngIf="errorMsg" class="error">{{ errorMsg }}</div>
+    </form>
+  </div>
+</div>

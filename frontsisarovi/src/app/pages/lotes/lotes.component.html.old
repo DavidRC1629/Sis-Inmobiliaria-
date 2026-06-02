@@ -1,0 +1,108 @@
+<nav class="navbar">
+  <div class="navbar-content">
+    <div class="navbar-left">
+      <button class="btn-back" (click)="goBack()">
+        ← Volver a Proyectos
+      </button>
+      <div class="logo">
+        <h1>AROVI</h1>
+        <span class="subtitle">INMOBILIARIA</span>
+      </div>
+    </div>
+    <div class="user-menu">
+      <span class="welcome-text">Bienvenido, Admin</span>
+      <div class="profile-dropdown">
+        <button class="btn-profile" (click)="toggleProfileMenu()">
+          👤 Mi Perfil
+        </button>
+        @if (showProfileMenu) {
+          <div class="dropdown-menu">
+            <button class="dropdown-item" (click)="goToProfile()">
+              👤 Ver perfil
+            </button>
+            <button class="dropdown-item" (click)="goToDashboard()">
+              ← Regresar al Dashboard
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item logout" (click)="logout()">
+              🚪 Cerrar Sesión
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="lotes-container">
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando proyecto...</p>
+    </div>
+  } @else if (project) {
+    <div class="project-header">
+      <div class="project-info">
+        <h2>🏢 {{ project.nombre }}</h2>
+        <p class="project-details">
+          <span>👤 Propietario: {{ project.propietario }}</span>
+          <span>•</span>
+          <span>🏘️ Total de Lotes: {{ project.numLotes }}</span>
+          <span>•</span>
+          <span>🗺️ Manzanas: {{ project.numManzanas }}</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="manzanas-section">
+      <h3 class="section-title">Distribución por Manzanas</h3>
+      
+      <div class="manzanas-grid">
+        @for (manzana of manzanas; track manzana.letra) {
+          <div class="manzana-block">
+            <!-- Letra de la manzana centrada arriba -->
+            <div class="manzana-letter-header">
+              {{ manzana.letra }}
+            </div>
+            
+            <!-- Contenedor de lotes -->
+            <div class="lotes-list">
+              @if (manzana.lotes.length === 0) {
+                <div class="empty-lote-slot">
+                  <span class="lote-label">LOTE 1</span>
+                  <button class="btn-agregar" (click)="agregarPrimerLote(manzana.letra)">
+                    🔗 AGREGAR
+                  </button>
+                </div>
+              } @else {
+                @for (lote of manzana.lotes; track lote.id) {
+                  <div class="lote-slot">
+                    <span class="lote-label">LOTE {{ lote.numero }}</span>
+                    <button class="btn-agregar" (click)="editarLote(lote)">
+                      ✏️ EDITAR
+                    </button>
+                  </div>
+                }
+                <!-- Slot para agregar nuevo lote -->
+                <div class="empty-lote-slot">
+                  <span class="lote-label">LOTE {{ manzana.lotes.length + 1 }}</span>
+                  <button class="btn-agregar" (click)="agregarNuevoLote(manzana.letra)">
+                    🔗 AGREGAR
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="error-state">
+      <div class="error-icon">❌</div>
+      <h3>Proyecto no encontrado</h3>
+      <button class="btn-primary" (click)="goBack()">
+        Volver a Proyectos
+      </button>
+    </div>
+  }
+</div>

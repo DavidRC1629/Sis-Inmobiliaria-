@@ -1,0 +1,160 @@
+<div class="devolucion-shell">
+  <nav class="navbar">
+    <div class="navbar-content">
+      <div class="logo">
+        <h1>AROVI</h1>
+        <span class="subtitle">INMOBILIARIA</span>
+      </div>
+
+      <div class="user-menu">
+        <button type="button" class="btn-back" (click)="goBack()">← Dashboard</button>
+        <button type="button" class="btn-logout" (click)="logout()">🚪 Cerrar Sesión</button>
+      </div>
+    </div>
+  </nav>
+
+  <section class="page-title-box" style="text-align:center; margin: 1rem 1.4rem;">
+    <p class="eyebrow">Control operativo</p>
+    <h1>Devoluciones</h1>
+    <p>Consulta devoluciones en curso o completadas y registra pagos con su medio correspondiente.</p>
+  </section>
+
+  <section class="state-switcher">
+    <button type="button" [class.active]="selectedEstado === 'EN_CURSO'" (click)="cambiarEstado('EN_CURSO')">En curso</button>
+    <button type="button" [class.active]="selectedEstado === 'COMPLETADA'" (click)="cambiarEstado('COMPLETADA')">Completadas</button>
+    <button type="button" [class.active]="selectedEstado === 'TODAS'" (click)="cambiarEstado('TODAS')">Todas</button>
+  </section>
+
+  <div *ngIf="notification" class="notification" [class.success]="notification.type === 'success'" [class.error]="notification.type === 'error'">
+    {{ notification.message }}
+  </div>
+
+  <main class="content-grid">
+    <section class="cards-panel">
+      <div class="panel-header">
+        <h2>Listado de devoluciones</h2>
+        <span>{{ devoluciones.length }} registro(s)</span>
+      </div>
+
+      <div *ngIf="loading" class="empty-state">Cargando devoluciones...</div>
+      <div *ngIf="!loading && devoluciones.length === 0" class="empty-state">No hay devoluciones para el estado seleccionado.</div>
+
+      <article *ngFor="let devolucion of devoluciones" class="devolucion-card" [class.active]="selectedDevolucion?.id === devolucion.id" (click)="seleccionar(devolucion)">
+        <div class="card-top">
+          <div>
+            <span class="tag">Lote {{ devolucion.loteNumero }}</span>
+            <h3>{{ devolucion.proyectoNombre }} - Manzana {{ devolucion.manzana }}</h3>
+            <p>{{ devolucion.parcelaNombre }} · Etapa {{ devolucion.etapaNumero }}</p>
+          </div>
+          <span class="state-badge" [class.done]="devolucion.estado === 'COMPLETADA'">{{ devolucion.estado === 'COMPLETADA' ? 'Completada' : 'En curso' }}</span>
+        </div>
+
+        <div class="amount-row">
+          <div>
+            <span>Monto total</span>
+            <strong>{{ formatMoney(devolucion.montoTotal) }}</strong>
+          </div>
+          <div>
+            <span>Pagado</span>
+            <strong>{{ formatMoney(devolucion.montoPagado) }}</strong>
+          </div>
+          <div>
+            <span>Pendiente</span>
+            <strong>{{ formatMoney(devolucion.montoPendiente) }}</strong>
+          </div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-track">
+            <div class="progress-fill" [style.width]="progressWidth(devolucion)"></div>
+          </div>
+          <small>{{ devolucion.progreso }}% completado · {{ devolucion.dias }} días</small>
+        </div>
+
+        <p class="description">{{ devolucion.descripcion }}</p>
+
+        <div class="card-actions">
+          <button type="button" class="btn-primary" (click)="$event.stopPropagation(); abrirPago(devolucion)" [disabled]="devolucion.estado === 'COMPLETADA'">
+            Registrar pago
+          </button>
+        </div>
+      </article>
+    </section>
+
+    <section class="detail-panel" *ngIf="selectedDevolucion; else emptyDetail">
+      <div class="panel-header">
+        <h2>Detalle de devolución</h2>
+        <span>ID {{ selectedDevolucion.id }}</span>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-meta">
+          <div><span>Proyecto</span><strong>{{ selectedDevolucion.proyectoNombre }}</strong></div>
+          <div><span>Lote</span><strong>{{ selectedDevolucion.loteNumero }}</strong></div>
+          <div><span>Fecha inicio</span><strong>{{ selectedDevolucion.fechaInicio }}</strong></div>
+          <div><span>Fecha fin</span><strong>{{ selectedDevolucion.fechaFinEstimada }}</strong></div>
+          <div><span>Monto total</span><strong>{{ formatMoney(selectedDevolucion.montoTotal) }}</strong></div>
+          <div><span>Monto pendiente</span><strong>{{ formatMoney(selectedDevolucion.montoPendiente) }}</strong></div>
+        </div>
+
+        <div class="detail-progress">
+          <div class="progress-track large">
+            <div class="progress-fill" [style.width]="progressWidth(selectedDevolucion)"></div>
+          </div>
+          <span>{{ selectedDevolucion.progreso }}% pagado</span>
+        </div>
+
+        <div class="payments-block">
+          <h3>Pagos registrados</h3>
+          <div *ngIf="selectedDevolucion.pagos.length === 0" class="empty-inline">No hay pagos aún.</div>
+          <div *ngFor="let pago of selectedDevolucion.pagos" class="payment-item">
+            <div>
+              <strong>{{ formatMoney(pago.monto) }}</strong>
+              <span>{{ pago.fechaPago }} · {{ pago.medioPago }}</span>
+            </div>
+            <p>{{ pago.descripcion }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <ng-template #emptyDetail>
+      <section class="detail-panel empty-detail">
+        <div class="empty-state">Selecciona una devolución para ver su detalle.</div>
+      </section>
+    </ng-template>
+  </main>
+</div>
+
+<div class="modal-overlay" *ngIf="showPagoModal" (click)="cerrarPago()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <h3>Registrar pago de devolución</h3>
+    <p *ngIf="selectedDevolucion">Lote {{ selectedDevolucion.loteNumero }} · {{ selectedDevolucion.proyectoNombre }}</p>
+
+    <div class="form-grid">
+      <label>
+        Monto
+        <input type="number" min="0" step="0.01" [(ngModel)]="pagoForm.monto" />
+      </label>
+      <label>
+        Fecha de pago
+        <input type="date" [(ngModel)]="pagoForm.fechaPago" />
+      </label>
+      <label>
+        Medio de pago
+        <select [(ngModel)]="pagoForm.medioPago">
+          <option *ngFor="let medio of medioPagoOptions" [value]="medio">{{ medio }}</option>
+        </select>
+      </label>
+      <label class="full-width">
+        Descripción
+        <textarea rows="4" [(ngModel)]="pagoForm.descripcion" placeholder="Describe el pago de devolución"></textarea>
+      </label>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" (click)="cerrarPago()">Cancelar</button>
+      <button type="button" class="btn-primary" (click)="guardarPago()" [disabled]="loadingPago">{{ loadingPago ? 'Guardando...' : 'Confirmar pago' }}</button>
+    </div>
+  </div>
+</div>

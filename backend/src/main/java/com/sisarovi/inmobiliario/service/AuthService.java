@@ -68,8 +68,8 @@ public class AuthService {
                                 LocalDateTime rejectionExpiresAt = existingUser.getRejectionExpiresAt();
 
                                 if (rejectionExpiresAt != null && rejectionExpiresAt.isAfter(now)) {
-                                        long remainingDays = Math.max(1, Duration.between(now, rejectionExpiresAt).toDays());
-                                        throw new RuntimeException("Este DNI fue rechazado recientemente. Podrás volver a registrar una solicitud en " + remainingDays + " día(s).");
+                                        long remainingHours = Math.max(1, Duration.between(now, rejectionExpiresAt).toHours());
+                                        throw new RuntimeException("Este DNI fue rechazado recientemente. Podrás volver a registrar una solicitud en " + remainingHours + " hora(s).");
                                 }
 
                                 existingUser.setPassword(passwordEncoder.encode(request.getPassword()));

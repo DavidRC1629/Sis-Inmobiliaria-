@@ -1,0 +1,716 @@
+/* --- INICIO: Header profesional para detalle de cronograma (Copilot) --- */
+.detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 18px;
+  margin-bottom: 18px;
+  margin-top: 18px;
+}
+.detail-header-hero {
+  width: 100%;
+  background: linear-gradient(120deg, #dbeafe 0%, #c7d2fe 100%) !important;
+  border-radius: 14px 14px 0 0 !important;
+  padding: 10px 18px 8px 18px !important;
+  margin-bottom: 10px !important;
+  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.07) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+}
+.detail-header-info {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.detail-header-info h2 {
+  margin: 0 0 4px 0;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: 0.5px;
+}
+.detail-header-info p {
+  margin: 0 0 2px 0;
+  color: #3a4a6b;
+  font-size: 1rem;
+  font-weight: 500;
+}
+.asesor-line, .asesor-edit-row {
+  margin-top: 7px;
+  font-size: 0.98rem;
+  color: #3a4a6b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  min-height: unset !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+.asesor-placeholder {
+  color: #b0b8c9;
+  font-style: italic;
+}
+.btn-edit-asesor {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #3a4a6b;
+  font-size: 1.1rem;
+  padding: 0 4px;
+  line-height: 1;
+  margin-left: 4px;
+}
+.btn-edit-asesor:hover {
+  color: #1a3e6b;
+}
+.asesor-input {
+  border: 1px solid #cba8c0;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.98rem;
+}
+.btn-asesor-save {
+  background: #7b3f6e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.98rem;
+  cursor: pointer;
+}
+.btn-asesor-save:hover {
+  background: #5a1f4e;
+}
+.btn-asesor-cancel {
+  background: none;
+  border: 1px solid #cba8c0;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.98rem;
+  cursor: pointer;
+  color: #7a6670;
+}
+/* --- FIN: Header profesional para detalle de cronograma (Copilot) --- */
+/* --- INICIO: Mejora cabecera de detalle cronograma (Copilot) --- */
+.detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.detail-header-info {
+  min-width: 260px;
+  max-width: 420px;
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.detail-header-info h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: 0.5px;
+}
+.detail-header-info p {
+  margin: 0;
+  color: #6e6670;
+  font-size: 1.08rem;
+  font-weight: 500;
+}
+.asesor-line, .asesor-edit-row {
+  margin-top: 7px;
+  font-size: 1rem;
+  color: #7a6670;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f7f4f8;
+  border-radius: 8px;
+  padding: 5px 12px;
+  min-height: 36px;
+  box-shadow: 0 1px 4px rgba(139,21,56,0.04);
+}
+.asesor-placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+.btn-edit-asesor {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9b5a7a;
+  font-size: 1.1rem;
+  padding: 0 4px;
+  line-height: 1;
+  margin-left: 4px;
+}
+.btn-edit-asesor:hover {
+  color: #6a1e50;
+}
+.asesor-input {
+  border: 1px solid #cba8c0;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 1rem;
+}
+.btn-asesor-save {
+  background: #7b3f6e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.btn-asesor-save:hover {
+  background: #5a1f4e;
+}
+.btn-asesor-cancel {
+  background: none;
+  border: 1px solid #cba8c0;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #7a6670;
+}
+.detail-header-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-top: 0 !important;
+  justify-content: flex-end !important;
+}
+.detail-header-actions button {
+  min-width: 140px !important;
+  max-width: 200px !important;
+  padding: 8px 14px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+  transition: background 0.18s, color 0.18s, border 0.18s !important;
+  display: inline-block !important;
+}
+.btn-amortizar {
+  background: #2d5fa7;
+  color: #fff;
+  border: none;
+}
+.btn-amortizar:hover {
+  background: #1a3e6b;
+}
+.btn-pago-cuota {
+  background: #8b1538;
+  color: #fff;
+  border: none;
+}
+.btn-pago-cuota:hover {
+  background: #5a0f24;
+}
+.btn-descuento {
+  background: linear-gradient(135deg, #2ecc40 0%, #27ae60 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  min-width: 140px !important;
+  max-width: 200px !important;
+  padding: 8px 14px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.13) !important;
+  margin-left: 8px !important;
+  transition: background 0.18s, box-shadow 0.18s !important;
+  outline: none !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+}
+.btn-descuento:hover {
+  background: linear-gradient(135deg, #27ae60 0%, #219150 100%) !important;
+}
+.detail-back {
+  background: #fff;
+  color: #8b1538;
+  border: 1px solid #8b1538;
+}
+.detail-back:hover {
+  background: #f3eef4;
+}
+.estado-pill.moroso {
+  background: #e53935 !important;
+  color: #fff !important;
+}
+/* --- FIN: Mejora cabecera de detalle cronograma (Copilot) --- */
+/* --- INICIO: Estilos globales forzados para cronogramas (Copilot) --- */
+/* Botón verde profesional para descuento */
+.btn-descuento {
+  background: linear-gradient(135deg, #2ecc40 0%, #27ae60 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 15px;
+  margin-left: 8px;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.13);
+  transition: background 0.18s, box-shadow 0.18s;
+  outline: none;
+  cursor: pointer;
+}
+.btn-descuento:hover, .btn-descuento:focus {
+  background: linear-gradient(135deg, #27ae60 0%, #219150 100%);
+  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.18);
+}
+
+/* Modal de descuento refinado */
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(60, 30, 80, 0.18);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(60, 30, 80, 0.18);
+  padding: 32px 28px 22px 28px;
+  min-width: 320px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.modal h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+  color: #173f4f;
+}
+.modal label {
+  font-size: 13px;
+  color: #6b0f2a;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.modal input[type="number"], .modal input[type="text"] {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d4c0cf;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+.modal-actions button {
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-weight: 700;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+}
+.modal-actions button:first-child {
+  background: linear-gradient(135deg, #2ecc40 0%, #27ae60 100%);
+  color: #fff;
+}
+.modal-actions button:first-child:disabled {
+  background: #b7eac7;
+  color: #fff;
+  cursor: not-allowed;
+}
+.modal-actions button:last-child {
+  background: #f3eef4;
+  color: #6b0f2a;
+  border: 1px solid #d8c3d4;
+}
+.cronogramas-page {
+  min-height: 100vh;
+  padding: 24px;
+  background: #e8d5e5;
+}
+.topbar-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, #722f37 0%, #8b1538 100%);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(114, 47, 55, 0.25);
+  padding: 16px 18px;
+}
+.topbar-card h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+}
+.topbar-card p {
+  margin: 4px 0 0;
+  color: #fff;
+  opacity: 0.95;
+}
+.topbar-card .btn-back {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: none;
+}
+.topbar-card .btn-back:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.filters-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 12px;
+  margin-bottom: 14px;
+}
+.btn-back,
+.btn-search,
+.btn-clean,
+.pay-inline button,
+.payment-grid button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-back,
+.btn-search {
+  background: linear-gradient(135deg, #8b1538 0%, #6b0f2a 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(139, 21, 56, 0.18);
+}
+.btn-clean {
+  background: #f3eef4;
+  color: #6b0f2a;
+  border: 1px solid #d8c3d4;
+}
+.filters-panel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 10px;
+  padding: 6px;
+}
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.filter-item label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b0f2a;
+  text-transform: uppercase;
+}
+.filter-item input,
+.filter-item select,
+.pay-inline input,
+.payment-grid input {
+  height: 40px;
+  border: 1px solid #d4c0cf;
+  border-radius: 10px;
+  padding: 0 10px;
+  background: #fff;
+}
+.filter-actions {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+}
+.main-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+.main-layout.detail-mode {
+  grid-template-columns: minmax(0, 1fr);
+}
+.detail-layout {
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
+  gap: 14px;
+}
+.list-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.card-shell {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e0d5de;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.left-panel {
+  padding: 12px;
+}
+.list-panel {
+  padding: 12px;
+  min-height: 520px;
+}
+.detail-list-panel {
+  min-height: 100%;
+}
+.panel-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.panel-title h3 {
+  margin: 0;
+  color: #173f4f;
+}
+.panel-title p {
+  margin: 4px 0 0;
+  color: #7a6f78;
+  font-size: 12px;
+}
+.panel-title span {
+  color: #7a6f78;
+  font-size: 12px;
+}
+.contracts-list {
+  display: grid;
+  gap: 8px;
+  max-height: 66vh;
+  overflow: auto;
+  padding-right: 3px;
+}
+.split-list {
+  max-height: 72vh;
+}
+.detail-side-list {
+  max-height: calc(100vh - 250px);
+}
+.contract-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #e2d5df;
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  cursor: pointer;
+}
+.contract-item.active {
+  border-color: #8b1538;
+  background: #fff5fa;
+}
+.contract-item-inicial {
+  background: linear-gradient(180deg, #fffdf7 0%, #fff9ec 100%);
+}
+.contract-head,
+.contract-meta,
+.contract-money {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+.contract-meta,
+.contract-money {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #6f6370;
+}
+.contract-plan {
+  margin-top: 6px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: #f6f2f6;
+  color: #5e4d57;
+  font-size: 12px;
+  font-weight: 700;
+}
+.estado-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: #ece7ef;
+  color: #6b0f2a;
+}
+.estado-pill.ok {
+  background: #daf1e0;
+  color: #1f6d42;
+}
+.estado-pill.pagado {
+  background: #c6f0d4;
+  color: #155a30;
+}
+.estado-pill.sep,
+.estado-pill.parcial,
+.estado-pill.pendiente {
+  background: #fff3c9;
+  color: #7a6200;
+}
+.estado-pill.deudor {
+  background: #ffdeda;
+  color: #912e22;
+}
+.estado-pill.moroso {
+  background: #ff4c3b;
+}
+/* --- FIN: Estilos globales forzados para cronogramas (Copilot) --- */
+/* --- INICIO: Estilos globales forzados para cronogramas (Copilot) --- */
+/* Botón de filtro de estado moderno */
+.filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #f9f4f8;
+  border-bottom: 1px solid #ecdce9;
+  margin-bottom: 8px;
+}
+.filter-tab {
+  border: 1px solid #d0bfce;
+  background: #fff;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #5a4460;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.filter-tab:hover {
+  background: #ecdce9;
+}
+.filter-tab.active {
+  background: #722f37;
+  color: #fff;
+  border-color: #722f37;
+}
+.filter-tab.pagado.active {
+  background: #1f6d42;
+  border-color: #1f6d42;
+}
+.filter-tab.moroso.active {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+.filter-tab.en-curso.active {
+  background: #1a5a8a;
+  border-color: #1a5a8a;
+}
+/* --- FIN: Estilos globales forzados para cronogramas (Copilot) --- */
+/* You can add global styles to this file, and also import other style files */
+:root{
+  --brand-maroon: #7b1630;
+  --brand-light: #f2dbe6;
+  --muted-text: #6b4b57;
+  --accent-green: #10a37f;
+}
+
+/* Header user name (show only the name, styled professionally) */
+.welcome-name{
+  color: #fff;
+  font-weight: 700;
+  margin: 0 0.7rem;
+  background: rgba(255,255,255,0.06);
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 1.08rem;
+  min-width: 88px;
+  text-align: center;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.05) inset;
+}
+
+/* Global navbar tweaks for consistency */
+.navbar{
+  background: var(--brand-maroon);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.navbar .navbar-content{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 12px 20px;
+}
+.navbar .logo h1{
+  margin:0;
+  font-size:1.5rem;
+  letter-spacing: 2px;
+}
+.navbar .header-actions{
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+}
+
+/* Unified back button */
+.btn-back{
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight:600;
+}
+.btn-back:hover{
+  background: rgba(255,255,255,0.06);
+}
+
+/* Small variant used inside proforma view */
+.btn-back-proforma{
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #222;
+  padding:6px 10px;
+  border-radius:6px;
+}
+
+/* Accent for primary actions */
+.btn-green{ background: var(--accent-green); color: #fff; border:none }
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  background: #E8D5E5;
+}
+
+app-root {
+  display: block;
+  min-height: 100vh;
+  background: #E8D5E5;
+}

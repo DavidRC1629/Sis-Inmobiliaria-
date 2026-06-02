@@ -1,0 +1,63 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="logo-section">
+      <h1 class="logo-title">AROVI</h1>
+      <p class="logo-subtitle">INMOBILIARIA</p>
+    </div>
+    
+    <h2>Iniciar Sesión</h2>
+    
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="form-group">
+        <label for="identifier">DNI o Correo</label>
+        <input 
+          type="text" 
+          id="identifier" 
+          name="identifier"
+          [(ngModel)]="credentials.identifier"
+          required
+          [disabled]="loading"
+          placeholder="12345678 o correo@dominio.com"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <div class="password-input-modern">
+          <input 
+            [type]="showPassword ? 'text' : 'password'"
+            id="password" 
+            name="password"
+            [(ngModel)]="credentials.password"
+            required
+            [disabled]="loading"
+            placeholder="••••••••"
+          />
+          <button type="button" class="toggle-password-modern" (click)="togglePassword()" [disabled]="loading" tabindex="-1">
+            <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.87 0-7.19-2.4-8.47-6C4.81 7.9 8.13 5.5 12 5.5c3.87 0 7.19 2.4 8.47 6-1.28 3.6-4.6 6-8.47 6zm0-10a4 4 0 100 8 4 4 0 000-8zm0 6a2 2 0 110-4 2 2 0 010 4z" fill="#888"/><line x1="4" y1="20" x2="20" y2="4" stroke="#888" stroke-width="2"/></svg>
+            <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.87 0-7.19-2.4-8.47-6C4.81 7.9 8.13 5.5 12 5.5c3.87 0 7.19 2.4 8.47 6-1.28 3.6-4.6 6-8.47 6zm0-10a4 4 0 100 8 4 4 0 000-8zm0 6a2 2 0 110-4 2 2 0 010 4z" fill="#888"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="forgot-password-wrap">
+        <a routerLink="/forgot-password" class="forgot-password-link">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <div *ngIf="error" class="error-message">
+        {{ error }}
+      </div>
+
+      <button 
+        type="submit" 
+        [disabled]="!loginForm.valid || loading"
+        class="btn-primary"
+      >
+        <span *ngIf="loading">Iniciando sesión...</span>
+        <span *ngIf="!loading">Iniciar Sesión</span>
+      </button>
+    </form>
+    
+    <p class="register-link">¿No tiene cuenta? <a routerLink="/register" class="link-register">Regístrate aquí</a></p>
+  </div>
+</div>

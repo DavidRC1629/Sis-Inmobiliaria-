@@ -1,0 +1,43 @@
+<div class="terrenos-propios-page">
+  <h2>Terrenos Propios</h2>
+  <div *ngIf="loading">Cargando...</div>
+  <div *ngIf="!loading && terrenos.length === 0" class="empty-terrenos">
+    No hay Lotes Propios aún creados
+    <button class="btn-crear" (click)="openCreateModal()">Crear Lote Propio</button>
+  </div>
+  <div *ngIf="!loading && terrenos.length > 0">
+    <div class="terreno-card" *ngFor="let terreno of terrenos">
+      <img *ngIf="terreno.imagenUrl" [src]="terreno.imagenUrl" alt="Foto Terreno" class="terreno-img" />
+      <div class="terreno-info">
+        <div><b>N° Lote:</b> {{ terreno.numeroLote }}</div>
+        <div><b>Partida:</b> {{ terreno.numeroPartida }}</div>
+        <div><b>Propietario:</b> {{ terreno.propietario?.nombres }} {{ terreno.propietario?.apellidos }}</div>
+        <div><b>Precio:</b> S/ {{ terreno.precio }}</div>
+        <div><b>Estado:</b> {{ terreno.estado }}</div>
+        <button class="btn-ver" (click)="openDetailModal(terreno.id)">Ver Detalle</button>
+        <button class="btn-ver" (click)="openAdquisicionModal(terreno.id)">Adquirir</button>
+      </div>
+    </div>
+    <button class="btn-crear" (click)="openCreateModal()">Crear Lote Propio</button>
+  </div>
+
+  <!-- Modals -->
+  <app-terreno-propio-form
+    *ngIf="showCreateModal"
+    [visible]="showCreateModal"
+    (close)="closeCreateModal()"
+    (created)="onCreated()">
+  </app-terreno-propio-form>
+
+  <app-terreno-propio-detail
+    *ngIf="showDetailModal && selectedTerrenoId !== null"
+    [terrenoId]="selectedTerrenoId!"
+    (close)="closeDetailModal()">
+  </app-terreno-propio-detail>
+
+  <app-adquisicion-terreno-modal
+    *ngIf="showAdquisicionModal && selectedTerrenoId !== null"
+    [terrenoId]="selectedTerrenoId!"
+    (close)="closeAdquisicionModal()">
+  </app-adquisicion-terreno-modal>
+</div>

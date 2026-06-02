@@ -1,0 +1,742 @@
+<!-- Navbar -->
+<div class="navbar">
+  <div class="navbar-content">
+    <button class="back-button" (click)="goBack()">
+      ⬅️ Volver
+    </button>
+    <h1>🏠 Gestión de Lotes</h1>
+    <button class="create-button" (click)="buscarCliente()">
+      🔍 Buscar Cliente
+    </button>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- Vista por Manzanas -->
+  <div *ngIf="!loading" class="manzanas-container">
+    <div *ngFor="let manzana of getManzanasDescendentes()" class="manzana-section">
+      <div class="manzana-header">
+        <h2>🏘️ Manzana {{ manzana }}</h2>
+        <div class="manzana-actions">
+          <button class="create-lote-btn" (click)="openCreateModalForManzana(manzana)">
+            ➕ Crear Lote en {{ manzana }}
+          </button>
+          <div class="header-mode-actions">
+            <button
+              class="header-action-btn edit-mode-btn"
+              [class.active]="viewMode === 'edit'"
+              (click)="setViewMode('edit')">
+              ✏️ Editar
+            </button>
+            <button
+              class="header-action-btn delete-mode-btn"
+              [class.active]="viewMode === 'delete'"
+              (click)="setViewMode('delete')">
+              🗑️ Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lotes de esta manzana -->
+      <div class="lotes-grid">
+        <div *ngFor="let lote of getLotesByManzana(manzana); trackBy: trackByLoteId" class="lote-card">
+          <div class="card-header">
+            <h3 style="text-align: center; width: 100%; margin: 0 auto;">Lote {{ lote.numero }}</h3>
+          </div>
+          
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">🛣️ Calle:</span>
+              <span class="value">{{ lote.calle || 'N/A' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">📏 Área:</span>
+              <span class="value">{{ lote.areaM2 }} m²</span>
+            </div>
+            <div class="info-row">
+              <span class="label">📐 Perímetro:</span>
+              <span class="value">{{ lote.perimetro }} m</span>
+            </div>
+            <div class="info-row" *ngIf="lote.precioLote">
+              <span class="label">💰 Precio:</span>
+              <span class="value">S/ {{ formatMontoConComas(lote.precioLote) }}</span>
+            </div>
+            <div class="info-row" *ngIf="lote.numeroPartida">
+              <span class="label">📋 Nº Partida:</span>
+              <span class="value">{{ lote.numeroPartida }}</span>
+            </div>
+
+            <div class="owner-assigned-inline" *ngIf="isLoteAdquirido(lote)">
+              <span class="owner-icon">🚫</span>
+              <span>Le pertenece a: {{ propietariosLoteTexto(lote) }}</span>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button class="adquirir-button" *ngIf="!isLoteAdquirido(lote)" (click)="adquirirLote(lote)">
+              ➕ Adquirir
+            </button>
+            <button class="info-button" (click)="openInfoLote(lote)">
+              ⓘ Ver info
+            </button>
+          </div>
+
+          <div class="card-actions secondary" *ngIf="viewMode === 'edit' || viewMode === 'delete'">
+            <button *ngIf="viewMode === 'edit'" class="edit-button" (click)="openEditModal(lote)">
+              ✏️ Editar este Lote
+            </button>
+            <button *ngIf="viewMode === 'delete'" class="delete-button" (click)="deleteLote(lote)">
+              🗑️ Eliminar este Lote
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty state para manzana sin lotes -->
+        <div *ngIf="getLotesByManzana(manzana).length === 0" class="empty-manzana">
+          <p>📭 No hay lotes en esta manzana</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Info del Lote -->
+<div class="modal-overlay" *ngIf="showInfoModal" (click)="closeInfoModal()">
+  <div class="modal info-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>ⓘ Información del Lote</h2>
+      <button class="close-button" (click)="closeInfoModal()">✖</button>
+    </div>
+
+    <div *ngIf="selectedLoteForInfo" class="info-lote-content">
+      <div class="lote-context-grid">
+        <div><strong>Proyecto:</strong> {{ selectedLoteForInfo.projectNombre || 'N/A' }}</div>
+        <div><strong>Etapa:</strong> {{ selectedLoteForInfo.etapaNumero || 'N/A' }}</div>
+        <div><strong>Parcela:</strong> {{ selectedLoteForInfo.parcelaNombre || 'N/A' }}</div>
+        <div><strong>Manzana:</strong> {{ selectedLoteForInfo.manzana || 'N/A' }}</div>
+        <div><strong>Lote:</strong> {{ selectedLoteForInfo.numero }}</div>
+        <div><strong>Calle:</strong> {{ selectedLoteForInfo.calle || 'N/A' }}</div>
+        <div><strong>Área:</strong> {{ selectedLoteForInfo.areaM2 || 0 }} m²</div>
+        <div><strong>Perímetro:</strong> {{ selectedLoteForInfo.perimetro || 0 }} m</div>
+        <div><strong>Precio de lote:</strong> S/ {{ formatMontoConComas(selectedLoteForInfo.precioLote || 0) }}</div>
+      </div>
+
+      <div class="info-status" *ngIf="!infoLoading && !infoError">
+        <div class="status-pill" [class.acquired]="infoClientesDelLote.length > 0" [class.available]="infoClientesDelLote.length === 0">
+          {{ infoClientesDelLote.length > 0 ? 'Estado: Adquirido' : 'Estado: Disponible (sin adquisición)' }}
+        </div>
+
+        <div *ngIf="infoClientesDelLote.length > 0" class="owners-list-mini">
+          <h4>Cliente(s) asociado(s):</h4>
+          <div *ngFor="let cliente of infoClientesDelLote" class="owner-mini-item">
+            {{ cliente.nombres }} {{ cliente.apellidos }} - DNI: {{ cliente.dni }}
+          </div>
+        </div>
+      </div>
+
+      <div class="error-message general" *ngIf="infoError">{{ infoError }}</div>
+
+      <div class="loading" *ngIf="infoLoading">
+        <div class="spinner"></div>
+        <p>Consultando estado del lote...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modalTitle }}</h2>
+      <button class="close-button" (click)="closeModal()">✖</button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="numero">Número de Lote *</label>
+          <input
+            type="number"
+            id="numero"
+            name="numero"
+            [(ngModel)]="formData.numero"
+            [class.error]="formErrors.numero"
+            min="1"
+            required
+          />
+          <span class="error-message" *ngIf="formErrors.numero">{{ formErrors.numero }}</span>
+        </div>
+
+        <div class="form-group">
+          <label for="manzana">Manzana * {{ manzanaLocked ? '🔒' : '' }}</label>
+          <input
+            type="text"
+            id="manzana"
+            name="manzana"
+            [(ngModel)]="formData.manzana"
+            [class.error]="formErrors.manzana"
+            [disabled]="manzanaLocked"
+            [readonly]="manzanaLocked"
+            maxlength="2"
+            placeholder="A, B, C..."
+            required
+          />
+          <span class="error-message" *ngIf="formErrors.manzana">{{ formErrors.manzana }}</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="calle">Calle *</label>
+        <input
+          type="text"
+          id="calle"
+          name="calle"
+          [(ngModel)]="formData.calle"
+          [class.error]="formErrors.calle"
+          required
+        />
+        <span class="error-message" *ngIf="formErrors.calle">{{ formErrors.calle }}</span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="areaM2">Área (m²) *</label>
+          <input
+            type="number"
+            id="areaM2"
+            name="areaM2"
+            [(ngModel)]="formData.areaM2"
+            [class.error]="formErrors.areaM2"
+            min="0"
+            step="0.01"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="perimetro">Perímetro (m) *</label>
+          <input
+            type="number"
+            id="perimetro"
+            name="perimetro"
+            [(ngModel)]="formData.perimetro"
+            [class.error]="formErrors.perimetro"
+            min="0"
+            step="0.01"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="medidaFrente">Medida Frente (m)</label>
+          <input
+            type="number"
+            id="medidaFrente"
+            name="medidaFrente"
+            [(ngModel)]="formData.medidaFrente"
+            min="0"
+            step="0.01"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="medidaFondo">Medida Fondo (m)</label>
+          <input
+            type="number"
+            id="medidaFondo"
+            name="medidaFondo"
+            [(ngModel)]="formData.medidaFondo"
+            min="0"
+            step="0.01"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="medidaIzquierda">Medida Izquierda (m)</label>
+          <input
+            type="number"
+            id="medidaIzquierda"
+            name="medidaIzquierda"
+            [(ngModel)]="formData.medidaIzquierda"
+            min="0"
+            step="0.01"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="medidaDerecha">Medida Derecha (m)</label>
+          <input
+            type="number"
+            id="medidaDerecha"
+            name="medidaDerecha"
+            [(ngModel)]="formData.medidaDerecha"
+            min="0"
+            step="0.01"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="numeroPartida">Número de Partida *</label>
+        <input
+          type="text"
+          id="numeroPartida"
+          name="numeroPartida"
+          [(ngModel)]="formData.numeroPartida"
+          (ngModelChange)="onNumeroPartidaChange()"
+          maxlength="8"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          [class.error]="formErrors.numeroPartida || numeroPartidaDuplicada"
+          required
+        />
+        <span class="error-message" *ngIf="formErrors.numeroPartida">{{ formErrors.numeroPartida }}</span>
+      </div>
+
+      <div class="form-group">
+        <label for="precioLote">Precio de Lote *</label>
+        <input
+          type="number"
+          id="precioLote"
+          name="precioLote"
+          [(ngModel)]="formData.precioLote"
+          [class.error]="formErrors.precioLote"
+          min="0.01"
+          step="0.01"
+          required
+        />
+        <span class="error-message" *ngIf="formErrors.precioLote">{{ formErrors.precioLote }}</span>
+      </div>
+
+      <div class="error-message general" *ngIf="formErrors.general">
+        {{ formErrors.general }}
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cancel-button" (click)="closeModal()">
+          Cancelar
+        </button>
+        <button type="submit" class="submit-button" [disabled]="loading || numeroPartidaDuplicada || numeroPartidaValidando">
+          <span *ngIf="!loading">{{ modalMode === 'create' ? '✅ Crear' : '💾 Guardar' }}</span>
+          <span *ngIf="loading">⏳ Procesando...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal de Búsqueda de Cliente -->
+<div class="modal-overlay" *ngIf="showSearchModal" (click)="closeSearchModal()">
+  <div class="modal-content search-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>🔍 Buscar Cliente</h2>
+      <button class="close-btn" (click)="closeSearchModal()">✖</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="search-section">
+        <div class="form-group">
+          <label>Buscar en:</label>
+          <div class="search-source-toggle">
+            <button type="button" class="source-button" [class.active]="searchSource === 'USUARIOS'" (click)="setSearchSource('USUARIOS')">Usuarios</button>
+            <button type="button" class="source-button" [class.active]="searchSource === 'RENIEC'" (click)="setSearchSource('RENIEC')">Reniec</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Buscar por:</label>
+          <div class="search-input-row">
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="searchQuery"
+              [placeholder]="searchSource === 'RENIEC' ? 'Ingrese DNI de 8 dígitos...' : 'Ingrese DNI, nombre o apellido...'"
+              autofocus>
+            <button type="button" class="btn-select search-trigger" (click)="executeSearch()" [disabled]="searchLoading">Buscar</button>
+          </div>
+        </div>
+
+        <div class="error-message general" *ngIf="searchError">{{ searchError }}</div>
+
+        <div class="search-results" *ngIf="searchResults.length > 0">
+          <h3>Resultados ({{ searchResults.length }})</h3>
+          <div class="results-list">
+            <div 
+              *ngFor="let result of searchResults" 
+              class="result-item search-result-card">
+              <div class="client-info">
+                <div class="client-name">
+                  <strong>{{ result.fullName }}</strong>
+                </div>
+                <div class="client-details">
+                  <span class="badge">DNI: {{ result.dni }}</span>
+                  <span class="badge" *ngIf="result.hasCronograma">Tiene cronograma</span>
+                </div>
+              </div>
+
+              <div class="result-actions">
+                <button type="button" class="btn-select" (click)="openProformaForClient(result)">Realizar Proforma →</button>
+                <button type="button" class="btn-select action-acquire" (click)="openAdquisicionForClient(result)">Adquirir Lote</button>
+                <button type="button" class="btn-select action-cronograma" *ngIf="result.hasCronograma" (click)="goToCronogramas(result)">Ver Cronograma</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="no-results" *ngIf="searchQuery.length > 0 && searchResults.length === 0 && !searchLoading && !searchError">
+          <p>❌ No se encontraron clientes con ese criterio</p>
+        </div>
+
+        <div class="loading" *ngIf="searchLoading">
+          <div class="spinner"></div>
+          <p>Buscando...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeSearchModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Acción Proforma + Adquisición -->
+<div class="modal-overlay" *ngIf="showProformaActionModal" (click)="closeProformaActionModal()">
+  <div class="modal-content proforma-action-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>🧾 Realizar Proforma</h2>
+      <button class="close-btn" (click)="closeProformaActionModal()">✖</button>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedClientForAction">
+      <div class="selected-client-box">
+        <strong>Cliente:</strong> {{ selectedClientForAction.fullName }}
+        <br />
+        <strong>DNI:</strong> {{ selectedClientForAction.dni }}
+      </div>
+
+      <div class="form-group">
+        <label>Tipo de Proforma *</label>
+        <select [(ngModel)]="selectedProformaMode" name="selectedProformaMode">
+          <option value="LIBRE">Proforma Libre</option>
+          <option value="PROYECTO">Proforma por Proyecto</option>
+        </select>
+      </div>
+
+      <div class="form-group" *ngIf="selectedProformaMode === 'PROYECTO'">
+        <label>Selecciona tu proyecto *</label>
+        <select [(ngModel)]="selectedProformaProjectId" name="selectedProformaProjectId">
+          <option [ngValue]="null">Seleccione proyecto</option>
+          <option *ngFor="let project of proformaProjects" [ngValue]="project.id">{{ project.nombre }}</option>
+        </select>
+        <div class="loading-inline" *ngIf="loadingProformaProjects">Cargando proyectos...</div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeProformaActionModal()">Cancelar</button>
+      <button class="btn-select" (click)="continuarConProformaYAdquisicion()">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Adquisición / Separación -->
+<div class="modal-overlay" *ngIf="showAdquisicionModal" (click)="closeAdquisicionModal()">
+  <div class="modal adquisicion-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>📝 Registro de Adquisición / Separación</h2>
+      <button class="close-button" (click)="closeAdquisicionModal()">✖</button>
+    </div>
+
+    <div class="adquisicion-section" *ngIf="selectedSearchClientForAdquisicion">
+      <h3>1) Cliente seleccionado</h3>
+      <div class="selected-client-box">
+        <strong>Cliente:</strong> {{ selectedSearchClientForAdquisicion.fullName }}
+        <br />
+        <strong>DNI:</strong> {{ selectedSearchClientForAdquisicion.dni }}
+      </div>
+    </div>
+
+    <div class="adquisicion-section" *ngIf="adquisicionRequiresLoteSelection">
+      <h3>{{ selectedSearchClientForAdquisicion ? '2) Seleccionar lote' : '1) Seleccionar lote' }}</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Proyecto *</label>
+          <select [(ngModel)]="adquisicionSelector.projectId" name="adqProjectId" (ngModelChange)="onAdquisicionProjectChange()">
+            <option [ngValue]="null">Seleccione proyecto</option>
+            <option *ngFor="let project of adquisicionProjects" [ngValue]="project.id">{{ project.nombre }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Etapa *</label>
+          <select [(ngModel)]="adquisicionSelector.etapaId" name="adqEtapaId" (ngModelChange)="onAdquisicionEtapaChange()" [disabled]="!adquisicionSelector.projectId">
+            <option [ngValue]="null">Seleccione etapa</option>
+            <option *ngFor="let etapa of adquisicionEtapas" [ngValue]="etapa.id">Etapa {{ etapa.numeroEtapa }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Parcela *</label>
+          <select [(ngModel)]="adquisicionSelector.parcelaId" name="adqParcelaId" (ngModelChange)="onAdquisicionParcelaChange()" [disabled]="!adquisicionSelector.etapaId">
+            <option [ngValue]="null">Seleccione parcela</option>
+            <option *ngFor="let parcela of adquisicionParcelas" [ngValue]="parcela.id">{{ parcela.nombre }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Manzana *</label>
+          <select [(ngModel)]="adquisicionSelector.manzanaId" name="adqManzanaId" (ngModelChange)="onAdquisicionManzanaChange()" [disabled]="!adquisicionSelector.parcelaId">
+            <option [ngValue]="null">Seleccione manzana</option>
+            <option *ngFor="let manzana of adquisicionManzanasDisponibles" [ngValue]="manzana.id">{{ manzana.nombre }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Lote *</label>
+          <select [(ngModel)]="adquisicionSelector.loteId" name="adqLoteId" (ngModelChange)="onAdquisicionLoteChange()" [disabled]="!adquisicionSelector.manzanaId">
+            <option [ngValue]="null">Seleccione lote</option>
+            <option *ngFor="let lote of getFilteredAdquisicionLotes()" [ngValue]="lote.id">Lote {{ lote.numero }}</option>
+          </select>
+        </div>
+        <div class="form-group loading-selectors" *ngIf="adquisicionSelectionLoading">
+          <label>&nbsp;</label>
+          <div class="loading-inline">Cargando opciones...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="adquisicion-section" *ngIf="selectedLoteForAdquisicion">
+      <h3>{{ selectedSearchClientForAdquisicion ? '3) Datos del lote seleccionado' : '1) Datos del lote seleccionado' }}</h3>
+      <div class="lote-context-grid">
+        <div><strong>Proyecto:</strong> {{ selectedLoteForAdquisicion.projectNombre || 'N/A' }}</div>
+        <div><strong>Etapa:</strong> {{ selectedLoteForAdquisicion.etapaNumero || 'N/A' }}</div>
+        <div><strong>Parcela:</strong> {{ selectedLoteForAdquisicion.parcelaNombre || 'N/A' }}</div>
+        <div><strong>Manzana:</strong> {{ selectedLoteForAdquisicion.manzana || 'N/A' }}</div>
+        <div><strong>Lote:</strong> {{ selectedLoteForAdquisicion.numero }}</div>
+        <div><strong>Calle:</strong> {{ selectedLoteForAdquisicion.calle || 'N/A' }}</div>
+      </div>
+    </div>
+
+    <div class="adquisicion-section">
+      <h3>{{ selectedSearchClientForAdquisicion ? '4) Propietarios (máximo 4)' : '2) Propietarios (máximo 4)' }}</h3>
+      <div class="form-group owners-count">
+        <label>Cantidad de propietarios *</label>
+        <select
+          [(ngModel)]="adquisicionForm.propietariosCount"
+          name="propietariosCount"
+          (ngModelChange)="onPropietariosCountChange()">
+          <option [ngValue]="1">1 propietario</option>
+          <option [ngValue]="2">2 propietarios</option>
+          <option [ngValue]="3">3 propietarios</option>
+          <option [ngValue]="4">4 propietarios</option>
+        </select>
+      </div>
+
+      <div class="owners-list">
+        <div class="owner-card" *ngFor="let owner of adquisicionForm.propietarios; let idx = index">
+          <h4>Propietario {{ idx + 1 }}</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombres *</label>
+              <input
+                type="text"
+                maxlength="40"
+                autocomplete="off"
+                [(ngModel)]="owner.nombres"
+                [name]="'ownerNombres' + idx"
+                (input)="onOwnerNombresChange(idx, $any($event.target).value)"
+                (ngModelChange)="onOwnerNombresChange(idx, $event)" />
+            </div>
+            <div class="form-group">
+              <label>Apellidos *</label>
+              <input type="text" [(ngModel)]="owner.apellidos" [name]="'ownerApellidos' + idx" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>DNI *</label>
+              <input
+                type="text"
+                maxlength="8"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+                [(ngModel)]="owner.dni"
+                [name]="'ownerDni' + idx"
+                (input)="onOwnerDniChange(idx, $any($event.target).value)"
+                (ngModelChange)="onOwnerDniChange(idx, $event)" />
+            </div>
+            <div class="form-group">
+              <label>Teléfono *</label>
+              <input
+                type="text"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+                [(ngModel)]="owner.telefono"
+                [name]="'ownerTelefono' + idx"
+                (input)="onOwnerTelefonoChange(idx, $any($event.target).value)"
+                (ngModelChange)="onOwnerTelefonoChange(idx, $event)" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Correo (opcional)</label>
+              <input type="email" [(ngModel)]="owner.email" [name]="'ownerEmail' + idx" />
+            </div>
+            <div class="form-group">
+              <label>Dirección *</label>
+              <input type="text" [(ngModel)]="owner.direccion" [name]="'ownerDireccion' + idx" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="adquisicion-section" *ngIf="adquisicionStep === 2">
+      <h3>{{ selectedSearchClientForAdquisicion ? '5) Tipo de operación' : '3) Tipo de operación' }}</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo *</label>
+          <select [(ngModel)]="adquisicionForm.tipoOperacion" name="tipoOperacion" (ngModelChange)="onAdquisicionTipoOperacionChange()">
+            <option value="CONTADO">Pago al Contado</option>
+            <option value="CREDITO">Pago al Crédito</option>
+            <option value="SEPARACION">Separación</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fecha de operación *</label>
+          <input type="date" [(ngModel)]="adquisicionForm.fechaOperacion" name="fechaOperacion" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Precio de Venta ({{ getPrecioVentaTipoLabel() }}) *</label>
+          <input
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            [(ngModel)]="adquisicionPrecioVentaInput"
+            name="precioVenta"
+            (ngModelChange)="onAdquisicionPrecioVentaInputChange($event)" />
+        </div>
+        <div class="form-group">
+          <label>Monto inicial de operación (S/) *</label>
+          <input
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            [(ngModel)]="adquisicionMontoOperacionInput"
+            name="montoOperacion"
+            (ngModelChange)="onAdquisicionMontoOperacionInputChange($event)"
+            [readonly]="adquisicionForm.tipoOperacion === 'CONTADO'"
+            [disabled]="adquisicionForm.tipoOperacion === 'CONTADO'" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Asesor</label>
+          <input
+            type="text"
+            maxlength="120"
+            [(ngModel)]="adquisicionForm.asesor"
+            name="asesor"
+            placeholder="Asesor externo o misma empresa" />
+        </div>
+      </div>
+
+      <div class="adq-medios-box">
+        <div class="adq-medios-head">
+          <strong>Medios de pago del monto inicial *</strong>
+          <button type="button" class="btn-add-medio-adq" (click)="addAdquisicionMedio()">+ Agregar medio</button>
+        </div>
+
+        <div class="adq-medio-row" *ngFor="let medio of adquisicionForm.medios">
+          <select [(ngModel)]="medio.medio" [name]="'adqMedio' + medio.id">
+            <option value="YAPE">Yape</option>
+            <option value="DEPOSITO">Deposito</option>
+            <option value="TRANSFERENCIA">Transferencia</option>
+            <option value="TARJETA">Tarjeta</option>
+            <option value="EFECTIVO">Efectivo</option>
+          </select>
+
+          <div class="adq-medio-monto">
+            <label>S/</label>
+            <input type="number" min="0.01" step="0.01" [(ngModel)]="medio.monto" [name]="'adqMonto' + medio.id" />
+          </div>
+
+          <div class="adq-efectivo-extra" *ngIf="medio.medio === 'EFECTIVO'">
+            <label>Con S/</label>
+            <input type="number" min="0" step="0.01" [(ngModel)]="medio.efectivoEntregado" [name]="'adqEntregado' + medio.id" />
+            <span class="adq-vuelto" *ngIf="medio.efectivoEntregado > 0">Vuelto: {{ vueltoAdquisicionEfectivo(medio) | number:'1.0-2' }}</span>
+          </div>
+
+          <button type="button" class="btn-remove-medio-adq" (click)="removeAdquisicionMedio(medio.id)" title="Eliminar">X</button>
+        </div>
+
+        <div class="adq-medios-total">
+          <span>Total medios:</span>
+          <strong>S/ {{ totalAdquisicionMedios() | number:'1.0-2' }}</strong>
+          <span class="adq-medios-diff" [class.ok]="totalAdquisicionMedios() === adquisicionForm.montoOperacion">
+            (Monto operacion: S/ {{ (adquisicionForm.montoOperacion || 0) | number:'1.0-2' }})
+          </span>
+        </div>
+      </div>
+
+      <div class="form-row" *ngIf="adquisicionForm.tipoOperacion === 'SEPARACION'">
+        <div class="form-group">
+          <label>Monto de separación fijo (S/) *</label>
+          <input type="text" [ngModel]="adquisicionMontoSeparacionInput" name="montoSeparacionObjetivoDisplay" readonly />
+        </div>
+      </div>
+
+      <div class="form-row" *ngIf="adquisicionForm.tipoOperacion !== 'CONTADO'">
+        <div class="form-group">
+          <label>Plazo en meses *</label>
+          <input type="number" min="1" max="360" step="1" [(ngModel)]="adquisicionForm.plazoMeses" name="plazoMeses" />
+        </div>
+        <div class="form-group">
+          <label>Interés (%)</label>
+          <input type="number" min="0" max="100" step="0.01" [(ngModel)]="adquisicionForm.interesPorcentaje" name="interesPorcentaje" />
+        </div>
+      </div>
+
+      <div class="operation-chip">Seleccionado: {{ getTipoOperacionLabel() }}</div>
+    </div>
+
+    <div class="error-message general" *ngIf="adquisicionErrors">{{ adquisicionErrors }}</div>
+
+    <div class="modal-actions" *ngIf="adquisicionStep === 1">
+      <button type="button" class="cancel-button" (click)="closeAdquisicionModal()">Cancelar</button>
+      <button type="button" class="submit-button" (click)="goToOperacionStep()">Siguiente</button>
+    </div>
+
+    <div class="modal-actions" *ngIf="adquisicionStep === 2">
+      <button type="button" class="cancel-button" (click)="backToPropietariosStep()">Volver</button>
+      <button type="button" class="submit-button" [disabled]="adquisicionSaving" (click)="guardarAdquisicion()">
+        <span *ngIf="!adquisicionSaving">✅ Guardar cliente e ir a cronograma</span>
+        <span *ngIf="adquisicionSaving">⏳ Registrando...</span>
+      </button>
+    </div>
+  </div>
+</div>

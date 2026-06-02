@@ -1,0 +1,27 @@
+<div class="detail-modal" *ngIf="terreno">
+  <div class="detail-shell">
+    <h3>Detalle del Lote Propio</h3>
+    <div *ngIf="loading">Cargando...</div>
+    <div *ngIf="errorMsg" class="error">{{ errorMsg }}</div>
+    <div *ngIf="!loading && terreno">
+      <div class="detail-row"><b>Número de Lote:</b> {{ terreno.numeroLote }}</div>
+      <div class="detail-row"><b>Calle:</b> {{ terreno.calle }}</div>
+      <div class="detail-row"><b>Área (m²):</b> {{ terreno.areaM2 }}</div>
+      <div class="detail-row"><b>Perímetro:</b> {{ terreno.perimetro }}</div>
+      <div class="detail-row"><b>Medida Frente:</b> {{ terreno.medidaFrente }}</div>
+      <div class="detail-row"><b>Medida Fondo:</b> {{ terreno.medidaFondo }}</div>
+      <div class="detail-row"><b>Medida Izquierda:</b> {{ terreno.medidaIzquierda }}</div>
+      <div class="detail-row"><b>Medida Derecha:</b> {{ terreno.medidaDerecha }}</div>
+      <div class="detail-row"><b>Número de Partida:</b> {{ terreno.numeroPartida }}</div>
+      <div class="detail-row"><b>Precio:</b> {{ terreno.precio | currency:'PEN' }}</div>
+      <div class="detail-row"><b>Propietario:</b> {{ terreno.propietario.nombres }} {{ terreno.propietario.apellidos }}</div>
+      <div class="detail-row" *ngIf="terreno?.imagenUrl">
+        <b>Foto:</b><br />
+        <img [src]="terreno.imagenUrl" alt="Foto del terreno" class="terreno-foto" />
+      </div>
+      <div class="detail-actions">
+        <button (click)="closeDetail()" class="btn-cerrar">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

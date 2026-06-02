@@ -1,0 +1,107 @@
+<!-- Navbar -->
+<div class="navbar">
+  <div class="navbar-content">
+    <button class="back-button" (click)="goBack()">
+      ⬅️ Volver a Proyectos
+    </button>
+    <h1>📊 Gestión de Etapas</h1>
+    <button class="create-button" (click)="openCreateModal()">
+      ➕ Nueva Etapa
+    </button>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando etapas...</p>
+  </div>
+
+  <!-- Etapas Grid -->
+  <div *ngIf="!loading" class="etapas-grid">
+    <div *ngFor="let etapa of etapas; trackBy: trackByEtapaId" class="etapa-card">
+      <div class="card-header">
+        <h3>Etapa {{ etapa.numeroEtapa }}</h3>
+      </div>
+      
+      <div class="card-body">
+        <div class="info-row">
+          <span class="label">🏞️ Parcelas:</span>
+          <span class="value">{{ etapa.cantidadParcelas || 0 }}</span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="view-button" (click)="viewParcelas(etapa)">
+          🏞️ Ver Parcelas
+        </button>
+        <button class="edit-button" (click)="openEditModal(etapa)">
+          ✏️ Editar
+        </button>
+        <button class="delete-button" (click)="deleteEtapa(etapa)">
+          🗑️ Eliminar
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="etapas.length === 0" class="empty-state">
+      <div class="empty-icon">📊</div>
+      <h3>No hay etapas registradas</h3>
+      <p>Comienza creando tu primera etapa</p>
+      <button class="create-button" (click)="openCreateModal()">
+        ➕ Crear Primera Etapa
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+@if (showModal) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ modalTitle }}</h2>
+        <button class="close-button" (click)="closeModal()">✖</button>
+      </div>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="numeroEtapa">Número de Etapa *</label>
+          <input
+            type="number"
+            id="numeroEtapa"
+            name="numeroEtapa"
+            [(ngModel)]="formData.numeroEtapa"
+            [class.error]="formErrors.numeroEtapa"
+            min="1"
+            required
+          />
+          @if (formErrors.numeroEtapa) {
+            <span class="error-message">{{ formErrors.numeroEtapa }}</span>
+          }
+        </div>
+
+        @if (formErrors.general) {
+          <div class="error-message general">
+            {{ formErrors.general }}
+          </div>
+        }
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-button" (click)="closeModal()">
+            Cancelar
+          </button>
+          <button type="submit" class="submit-button" [disabled]="loading">
+            @if (!loading) {
+              <span>{{ modalMode === 'create' ? '✅ Crear' : '💾 Guardar' }}</span>
+            } @else {
+              <span>⏳ Procesando...</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -1,0 +1,111 @@
+<div class="dashboard-container">
+  <nav class="navbar">
+    <div class="navbar-content">
+      <div class="logo">
+        <h1>AROVI</h1>
+        <span class="subtitle">INMOBILIARIA</span>
+      </div>
+      <div class="header-actions">
+        <span class="welcome-name">{{ currentUser?.nombres || 'Usuario' }}</span>
+        <div class="dropdown" [class.open]="showDropdown" (mouseleave)="showDropdown = false">
+          <button type="button" class="btn-menu" (click)="toggleDropdown()">👤 Mi Perfil</button>
+          <div class="dropdown-menu" *ngIf="showDropdown">
+            <button (click)="goToPerfil()">👤 Ver perfil</button>
+            <button class="btn-logout" (click)="logout()">🚪 Cerrar Sesión</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content historial-main-content">
+    <div class="historial-container">
+      <div class="historial-header">
+        <h2>Historial de Proformas</h2>
+        <div class="header-actions local-actions">
+          <button class="btn-back-local" (click)="irAProformas()">← Volver a Proformas</button>
+          <button class="btn-search" (click)="toggleBuscar()">🔍 Buscar Proforma</button>
+        </div>
+      </div>
+
+      <div class="date-filter-row">
+        <label for="historialFecha">Buscar por fecha:</label>
+        <input id="historialFecha" type="date" [(ngModel)]="selectedFecha" (change)="onFechaChange()" />
+      </div>
+
+      <div class="search-panel" *ngIf="buscarVisible">
+        <div class="search-panel-title">🔎 Buscar Proforma</div>
+        <div class="search-label">Buscar por:</div>
+        <div class="search-options">
+          <button
+            type="button"
+            class="search-type-btn"
+            [class.active]="tipoBusqueda === 'codigo'"
+            (click)="cambiarTipoBusqueda('codigo')">
+            Código
+          </button>
+          <button
+            type="button"
+            class="search-type-btn"
+            [class.active]="tipoBusqueda === 'cliente'"
+            (click)="cambiarTipoBusqueda('cliente')">
+            Nombres y Apellidos
+          </button>
+        </div>
+
+        <div class="search-input-wrap">
+          <input
+            type="text"
+            [placeholder]="tipoBusqueda === 'codigo' ? 'Ingrese código...' : 'Ingrese nombres y apellidos...'"
+            [(ngModel)]="terminoBusqueda"
+            (ngModelChange)="onTerminoChange()"
+            (keyup.enter)="buscarAhora()"
+          />
+          <button type="button" class="btn-run-search" (click)="buscarAhora()">Buscar</button>
+          <small class="hint">Mínimo 3 caracteres para buscar.</small>
+        </div>
+
+        <div class="error" *ngIf="errorBusqueda">{{ errorBusqueda }}</div>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Proyecto</th>
+              <th>Cliente</th>
+              <th>DNI</th>
+              <th>Asesor</th>
+              <th>Fecha emisión</th>
+              <th>PDF</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of pagedProformas">
+              <td>{{ p.codigo }}</td>
+              <td>{{ p.proyecto || '-' }}</td>
+              <td>{{ p.clienteNombre || '-' }}</td>
+              <td>{{ p.clienteDni || '-' }}</td>
+              <td>{{ p.asesor || '-' }}</td>
+              <td>{{ formatearFechaCreacion(p.createdAt) }}</td>
+              <td>
+                <button class="btn-view-pdf" *ngIf="p.hasPdf" (click)="verPdf(p)">Ver PDF</button>
+                <span *ngIf="!p.hasPdf">-</span>
+              </td>
+            </tr>
+            <tr *ngIf="proformas.length === 0">
+              <td colspan="7" class="empty">📄 No hay proformas registradas.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-row" *ngIf="proformas.length > pageSize">
+        <button class="page-btn" (click)="goToPrevPage()" [disabled]="currentPage === 1">← Anterior</button>
+        <span class="page-indicator">Página {{ currentPage }} de {{ totalPages }}</span>
+        <button class="page-btn" (click)="goToNextPage()" [disabled]="currentPage === totalPages">Siguiente →</button>
+      </div>
+    </div>
+  </main>
+</div>

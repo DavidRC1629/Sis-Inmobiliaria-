@@ -1,0 +1,239 @@
+<div class="clientes-container">
+  <header class="navbar">
+    <div class="navbar-brand">
+      <div class="brand-icon">👥</div>
+      <div class="brand-text">
+        <h1>Clientes</h1>
+        <span class="subtitle">Módulo de gestión comercial</span>
+      </div>
+    </div>
+
+    <div class="navbar-actions">
+      <button class="btn-back" (click)="goBackDashboard()"><span class="back-arrow">↶</span> Regresar</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <section *ngIf="view === 'cards'" class="cards-view">
+      <div class="project-grid">
+        <article class="project-card history-card" (click)="goToHistory()">
+          <h3>📚 Historial de Clientes</h3>
+          <p>Ver y administrar todos los clientes de la empresa.</p>
+          <button class="btn-open">Abrir historial</button>
+        </article>
+
+        <article class="project-card" *ngFor="let project of projectCards" (click)="openProject(project)">
+          <h3>{{ project.projectNombre }}</h3>
+          <p>{{ project.cantidadClientes }} cliente(s) registrados</p>
+          <button class="btn-open">Ver clientes</button>
+        </article>
+
+        <article class="project-card loading-card" *ngIf="!cardsLoading && cardsError">
+          <h3>No se pudieron cargar los proyectos</h3>
+          <p>{{ cardsError }}</p>
+        </article>
+
+        <article class="project-card loading-card" *ngIf="!cardsLoading && projectCards.length === 0">
+          <h3>No hay proyectos disponibles</h3>
+          <p>Cuando registres proyectos aparecerán sus tarjetas aquí.</p>
+        </article>
+      </div>
+    </section>
+
+    <section *ngIf="view === 'project'" class="project-view">
+      <div class="title-row">
+        <h2>{{ selectedProject?.projectNombre }}</h2>
+        <p>Clientes asociados a este proyecto, con detalle de etapa, parcela, manzana y lote.</p>
+      </div>
+
+      <div class="empty" *ngIf="!projectClientsLoading && projectClientsError">
+        {{ projectClientsError }}
+      </div>
+
+      <div class="empty" *ngIf="!projectClientsLoading && !projectClientsError && selectedProjectClients.length === 0">
+        Aún no hay clientes en este proyecto.
+      </div>
+
+      <div class="client-card-grid" *ngIf="selectedProjectClients.length > 0">
+        <article class="client-card" *ngFor="let cliente of selectedProjectClients">
+          <div class="client-top-row">
+            <h3>{{ cliente.nombres }} {{ cliente.apellidos }}</h3>
+            <span class="since-chip">Cliente desde {{ formatClienteDesde(cliente.clienteDesde) }}</span>
+          </div>
+
+          <div class="client-grid">
+            <div><strong>DNI:</strong> {{ cliente.dni }}</div>
+            <div><strong>Teléfono:</strong> {{ cliente.telefono }}</div>
+            <div><strong>Correo:</strong> {{ cliente.email || 'No registrado' }}</div>
+            <div><strong>Dirección:</strong> {{ cliente.direccion }}</div>
+            <div><strong>Tipo:</strong> {{ cliente.tipoRelacion === 'SEPARACION' ? 'Separación' : 'Adquisición' }}</div>
+            <div class="hierarchy-row">
+              <strong>Ubicación:</strong>
+              <span class="hierarchy-chip">E{{ cliente.etapaNumero }}</span>
+              <span class="hierarchy-chip">{{ cliente.parcelaNombre }}</span>
+              <span class="hierarchy-chip">{{ cliente.manzana }}</span>
+              <span class="hierarchy-chip">L{{ cliente.loteNumero }}</span>
+            </div>
+          </div>
+
+          <div class="client-actions">
+            <button class="btn-chrono" (click)="onCronogramaClick(cliente); $event.stopPropagation()">Cronograma</button>
+
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section *ngIf="view === 'history'" class="history-view">
+      <div class="title-row">
+        <h2>Historial de Clientes</h2>
+        <p>Consulta, actualiza o elimina clientes con confirmación.</p>
+      </div>
+
+      <div class="history-search">
+        <select [(ngModel)]="historySearchBy">
+          <option value="nombre">Nombres</option>
+          <option value="dni">DNI</option>
+        </select>
+
+        <input
+          type="text"
+          [(ngModel)]="historyQuery"
+          [placeholder]="historySearchBy === 'dni' ? 'Buscar por DNI' : 'Buscar por nombres'"
+        />
+
+        <button class="btn-search" (click)="runHistorySearch()">🔍 Buscar</button>
+        <button class="btn-clear" (click)="clearHistorySearch()">Limpiar</button>
+
+        <label class="page-size-inline">
+          Mostrar
+          <select [(ngModel)]="historyPageSize" (ngModelChange)="onHistoryPageSizeChange()">
+            <option *ngFor="let size of historyPageSizeOptions" [ngValue]="size">{{ size }}</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>DNI</th>
+              <th>Teléfono</th>
+              <th>Dirección</th>
+              <th>Correo</th>
+              <th>Proyecto</th>
+              <th>Ubicación</th>
+              <th>Tipo</th>
+              <th>Cliente desde</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="historialClientes.length === 0">
+              <td colspan="10" class="empty">Aún no hay clientes en el sistema.</td>
+            </tr>
+
+            <tr *ngFor="let cliente of pagedHistorialClientes">
+              <td>{{ cliente.nombres }} {{ cliente.apellidos }}</td>
+              <td>{{ cliente.dni }}</td>
+              <td>{{ cliente.telefono }}</td>
+              <td>{{ cliente.direccion }}</td>
+              <td>{{ cliente.email || 'No registrado' }}</td>
+              <td>{{ cliente.projectNombre }}</td>
+              <td>E{{ cliente.etapaNumero }} · {{ cliente.parcelaNombre }} · {{ cliente.manzana }} · L{{ cliente.loteNumero }}</td>
+              <td>{{ cliente.tipoRelacion === 'SEPARACION' ? 'Separación' : 'Adquisición' }}</td>
+              <td>{{ formatClienteDesde(cliente.clienteDesde) }}</td>
+              <td class="action-col">
+                <button class="btn-edit" (click)="openEditModal(cliente)">Actualizar</button>
+                <button class="btn-delete" (click)="deleteCliente(cliente)">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="history-pagination" *ngIf="!historyLoading && historialClientes.length > 0">
+        <button class="btn-page" [disabled]="historyCurrentPage === 1" (click)="goToHistoryPage(historyCurrentPage - 1)">
+          Anterior
+        </button>
+        <span>Página {{ historyCurrentPage }} de {{ totalHistoryPages }}</span>
+        <button class="btn-page" [disabled]="historyCurrentPage === totalHistoryPages" (click)="goToHistoryPage(historyCurrentPage + 1)">
+          Siguiente
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <div class="notification" *ngIf="notification" [class.error]="notification.type === 'error'">
+    {{ notification.message }}
+  </div>
+
+  <div class="modal-overlay" *ngIf="showEditModal && editingCliente">
+    <div class="modal-card">
+      <h3>Actualizar cliente</h3>
+
+      <div class="form-grid">
+        <label>
+          Nombres *
+          <input type="text" [(ngModel)]="editForm.nombres" />
+        </label>
+
+        <label>
+          Apellidos *
+          <input type="text" [(ngModel)]="editForm.apellidos" />
+        </label>
+
+        <label>
+          DNI *
+          <input type="text" [(ngModel)]="editForm.dni" maxlength="15" />
+        </label>
+
+        <label>
+          Teléfono *
+          <input type="text" [(ngModel)]="editForm.telefono" maxlength="30" />
+        </label>
+
+        <label>
+          Correo (opcional)
+          <input type="email" [(ngModel)]="editForm.email" />
+        </label>
+
+        <label>
+          Dirección *
+          <input type="text" [(ngModel)]="editForm.direccion" />
+        </label>
+
+        <label>
+          Tipo *
+          <select [(ngModel)]="editForm.tipoRelacion">
+            <option value="ADQUISICION">Adquisición</option>
+            <option value="SEPARACION">Separación</option>
+          </select>
+        </label>
+
+        <label>
+          Cliente desde *
+          <input type="date" [(ngModel)]="editForm.clienteDesde" />
+        </label>
+
+        <label class="full-width">
+          Lote *
+          <select [(ngModel)]="editForm.loteId" [disabled]="true">
+            <option [ngValue]="0">Seleccionar lote</option>
+            <option *ngFor="let option of editLotes" [ngValue]="option.loteId">
+              Etapa {{ option.etapaNumero }} · {{ option.parcelaNombre }} · {{ option.manzana }} · Lote {{ option.loteNumero }}
+            </option>
+          </select>
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeEditModal()">Cancelar</button>
+        <button class="btn-save" [disabled]="savingEdit" (click)="saveEdit()">
+          {{ savingEdit ? 'Actualizando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
