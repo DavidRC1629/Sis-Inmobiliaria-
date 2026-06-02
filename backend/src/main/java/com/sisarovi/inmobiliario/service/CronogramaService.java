@@ -175,10 +175,14 @@ public class CronogramaService {
         if (precioVenta.compareTo(CERO) <= 0) {
             throw new RuntimeException("El precio de venta debe ser mayor a 0");
         }
-        if (montoOperacion.compareTo(CERO) <= 0) {
-            throw new RuntimeException("El monto de operación debe ser mayor a 0");
+        if (montoOperacion.compareTo(new BigDecimal("100")) <= 0) {
+            throw new RuntimeException("El monto de operación debe ser mayor que 100");
         }
         String tipoOperacion = normalizeTipoOperacion(request.getTipoOperacion());
+
+        if ("CONTADO".equals(tipoOperacion) && precioVenta.compareTo(montoOperacion) != 0) {
+            throw new RuntimeException("En Pago al Contado, el monto de operación debe ser exactamente igual al precio de venta.");
+        }
 
         BigDecimal montoPagadoTotal = montoOperacion.min(precioVenta);
         BigDecimal montoSeparacionAcumulado = montoPagadoTotal.min(montoSeparacionObjetivo);

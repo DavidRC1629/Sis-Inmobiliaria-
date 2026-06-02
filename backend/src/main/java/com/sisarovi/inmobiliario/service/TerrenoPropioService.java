@@ -41,7 +41,8 @@ public class TerrenoPropioService {
 
     @Transactional
     public TerrenoPropioResponse create(TerrenoPropioRequest request) {
-        if (terrenoPropioRepository.existsByNumeroPartida(request.getNumeroPartida())) {
+        String numeroPartida = normalizeAndValidateNumeroPartida(request.getNumeroPartida());
+        if (terrenoPropioRepository.existsByNumeroPartida(numeroPartida)) {
             throw new IllegalArgumentException("El número de partida ya existe en el sistema");
         }
         Cliente propietario = clienteRepository.findById(request.getPropietarioId())
@@ -55,7 +56,7 @@ public class TerrenoPropioService {
                 .medidaFondo(request.getMedidaFondo())
                 .medidaIzquierda(request.getMedidaIzquierda())
                 .medidaDerecha(request.getMedidaDerecha())
-                .numeroPartida(request.getNumeroPartida())
+                .numeroPartida(numeroPartida)
                 .precio(request.getPrecio())
                 .propietario(propietario)
                 .imagenUrl(request.getImagenUrl())
@@ -66,7 +67,25 @@ public class TerrenoPropioService {
     }
 
     public boolean existsByNumeroPartida(String numeroPartida) {
-        return terrenoPropioRepository.existsByNumeroPartida(numeroPartida);
+        String normalized = numeroPartida == null ? "" : numeroPartida.trim();
+        if (!normalized.matches("^[0-9]{1,8}$")) {
+            return false;
+        }
+        return terrenoPropioRepository.existsByNumeroPartida(normalized);
+    }
+
+    private String normalizeAndValidateNumeroPartida(String numeroPartida) {
+        String normalized = numeroPartida == null ? "" : numeroPartida.trim();
+        if (normalized.isEmpty()) {
+            throw new IllegalArgumentException("El número de partida es obligatorio");
+        }
+        if (!normalized.matches("^[0-9]+$")) {
+            throw new IllegalArgumentException("El número de partida solo debe contener números");
+        }
+        if (normalized.length() > 8) {
+            throw new IllegalArgumentException("El número de partida debe tener como máximo 8 dígitos");
+        }
+        return normalized;
     }
 
     private TerrenoPropioResponse toResponse(TerrenoPropio t) {

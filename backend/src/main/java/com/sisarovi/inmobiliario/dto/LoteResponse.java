@@ -31,4 +31,5 @@ public class LoteResponse {
     private Integer etapaNumero;
     private Long projectId;
     private String projectNombre;
+    private boolean adquirido;
 }

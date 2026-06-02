@@ -19,6 +19,10 @@ public class ReniecController {
             error.put("error", "No se encontraron datos para el DNI");
             return ResponseEntity.status(404).body(error);
         }
-        return ResponseEntity.ok(result);
+        // Convertir JSONObject a Map para respuesta limpia
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        result.toMap().forEach((k, v) -> response.put(k, v));
+        System.out.println("✅ RENIEC Response for DNI " + dni + ": " + response);
+        return ResponseEntity.ok(response);
     }
 }

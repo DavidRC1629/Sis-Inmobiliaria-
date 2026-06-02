@@ -1,6 +1,7 @@
 package com.sisarovi.inmobiliario.config;
 
 import com.sisarovi.inmobiliario.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,14 +22,14 @@ public class ApplicationConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return dni -> userRepository.findByDni(dni)
-            .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + dni));
+        return identifier -> userRepository.findByDni(identifier)
+            .or(() -> userRepository.findByEmailIgnoreCase(identifier))
+            .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + identifier));
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService());
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
@@ -41,5 +42,10 @@ public class ApplicationConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 }

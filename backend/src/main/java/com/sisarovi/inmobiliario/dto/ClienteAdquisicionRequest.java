@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.DecimalMin;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,6 +32,7 @@ public class ClienteAdquisicionRequest {
     private BigDecimal precioVenta;
 
     @NotNull(message = "El monto de operación es obligatorio")
+    @DecimalMin(value = "100.01", message = "El monto de operación debe ser mayor que 100")
     private BigDecimal montoOperacion;
 
     @Size(max = 120, message = "El asesor no puede exceder 120 caracteres")

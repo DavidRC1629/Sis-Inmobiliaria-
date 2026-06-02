@@ -20,6 +20,8 @@ public class TerrenoPropioRequest {
     private BigDecimal medidaIzquierda;
     private BigDecimal medidaDerecha;
     @NotBlank
+    @Size(max = 8, message = "El número de partida debe tener como máximo 8 dígitos")
+    @Pattern(regexp = "^[0-9]+$", message = "El número de partida solo debe contener números")
     private String numeroPartida;
     @NotNull
     private BigDecimal precio;

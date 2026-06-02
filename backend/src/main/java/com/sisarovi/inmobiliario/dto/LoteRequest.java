@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,6 +36,8 @@ public class LoteRequest {
     private BigDecimal medidaFondo;
     
     @NotBlank(message = "El número de partida es obligatorio")
+    @Size(max = 8, message = "El número de partida debe tener como máximo 8 dígitos")
+    @Pattern(regexp = "^[0-9]+$", message = "El número de partida solo debe contener números")
     private String numeroPartida;
 
     @NotNull(message = "El precio del lote es obligatorio")

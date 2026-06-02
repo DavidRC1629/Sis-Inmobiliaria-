@@ -6,6 +6,7 @@ import com.sisarovi.inmobiliario.entity.Lote;
 import com.sisarovi.inmobiliario.entity.Parcela;
 import com.sisarovi.inmobiliario.entity.Manzana;
 import com.sisarovi.inmobiliario.repository.LoteRepository;
+import com.sisarovi.inmobiliario.repository.ClienteRepository;
 import com.sisarovi.inmobiliario.repository.ParcelaRepository;
 import com.sisarovi.inmobiliario.repository.ManzanaRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 public class LoteService {
     
     private final LoteRepository loteRepository;
+    private final ClienteRepository clienteRepository;
     private final ParcelaRepository parcelaRepository;
     private final ManzanaRepository manzanaRepository;
     
@@ -77,10 +79,7 @@ public class LoteService {
         }
         
         // Validar que el número de partida sea único globalmente
-        String numeroPartida = normalizeNumeroPartida(request.getNumeroPartida());
-        if (numeroPartida.isEmpty()) {
-            throw new RuntimeException("El número de partida es obligatorio.");
-        }
+        String numeroPartida = normalizeAndValidateNumeroPartida(request.getNumeroPartida());
         Optional<Lote> loteConPartida = loteRepository.findByNumeroPartidaIgnoreCase(numeroPartida);
         if (loteConPartida.isPresent()) {
             throw new RuntimeException("El número de partida " + numeroPartida + " ya existe y no se puede repetir.");
@@ -134,10 +133,7 @@ public class LoteService {
         }
         
         // Validar que el número de partida sea único globalmente (si cambió)
-        String numeroPartida = normalizeNumeroPartida(request.getNumeroPartida());
-        if (numeroPartida.isEmpty()) {
-            throw new RuntimeException("El número de partida es obligatorio.");
-        }
+        String numeroPartida = normalizeAndValidateNumeroPartida(request.getNumeroPartida());
         String numeroPartidaActual = normalizeNumeroPartida(lote.getNumeroPartida());
         if (!numeroPartida.equalsIgnoreCase(numeroPartidaActual)) {
             Optional<Lote> loteConPartida = loteRepository.findByNumeroPartidaIgnoreCase(numeroPartida);
@@ -203,6 +199,7 @@ public class LoteService {
                 .etapaNumero(lote.getParcela().getEtapa().getNumeroEtapa())
                 .projectId(lote.getParcela().getEtapa().getProject().getId())
                 .projectNombre(lote.getParcela().getEtapa().getProject().getNombre())
+                .adquirido(clienteRepository.existsByLoteId(lote.getId()))
                 .build();
     }
 
@@ -250,7 +247,7 @@ public class LoteService {
     @Transactional(readOnly = true)
     public boolean existsNumeroPartidaGlobal(String numeroPartida, Long excludeLoteId) {
         String normalized = normalizeNumeroPartida(numeroPartida);
-        if (normalized.isEmpty()) {
+        if (normalized.isEmpty() || !normalized.matches("^[0-9]{1,8}$")) {
             return false;
         }
 
@@ -264,6 +261,20 @@ public class LoteService {
 
     private String normalizeNumeroPartida(String numeroPartida) {
         return numeroPartida == null ? "" : numeroPartida.trim();
+    }
+
+    private String normalizeAndValidateNumeroPartida(String numeroPartida) {
+        String normalized = normalizeNumeroPartida(numeroPartida);
+        if (normalized.isEmpty()) {
+            throw new RuntimeException("El número de partida es obligatorio.");
+        }
+        if (!normalized.matches("^[0-9]+$")) {
+            throw new RuntimeException("El número de partida solo debe contener números.");
+        }
+        if (normalized.length() > 8) {
+            throw new RuntimeException("El número de partida debe tener como máximo 8 dígitos.");
+        }
+        return normalized;
     }
 
     private BigDecimal normalizePrecioLote(BigDecimal precioLote) {

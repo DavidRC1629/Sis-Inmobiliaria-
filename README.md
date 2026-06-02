@@ -49,8 +49,8 @@ START-FULLSTACK.bat
 ## 🛠️ Stack Tecnológico
 
 ### Backend
-- Java 21 LTS
-- Spring Boot 3.2.1
+- Java 25 LTS
+- Spring Boot 4.0.5
 - Spring Security + JWT
 - MySQL 8.0
 - Flyway Migrations

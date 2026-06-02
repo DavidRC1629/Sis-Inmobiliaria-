@@ -4,6 +4,7 @@ import com.sisarovi.inmobiliario.dto.ChangeRoleRequest;
 import com.sisarovi.inmobiliario.dto.UserResponse;
 import com.sisarovi.inmobiliario.entity.Role;
 import com.sisarovi.inmobiliario.entity.User;
+import com.sisarovi.inmobiliario.entity.UserStatus;
 import com.sisarovi.inmobiliario.repository.RoleRepository;
 import com.sisarovi.inmobiliario.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,12 @@ public class UserService {
 
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
+                .map(this::mapToUserResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<UserResponse> getPendingUsers() {
+        return userRepository.findByEstado(UserStatus.PENDIENTE).stream()
                 .map(this::mapToUserResponse)
                 .collect(Collectors.toList());
     }

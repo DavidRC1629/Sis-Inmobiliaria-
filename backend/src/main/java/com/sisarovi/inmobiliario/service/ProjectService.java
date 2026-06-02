@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.sisarovi.inmobiliario.dto.ProjectRequest;
 import com.sisarovi.inmobiliario.dto.ProjectResponse;
+import com.sisarovi.inmobiliario.repository.ClienteRepository;
 import com.sisarovi.inmobiliario.entity.Etapa;
 import com.sisarovi.inmobiliario.entity.Project;
 import com.sisarovi.inmobiliario.entity.User;
@@ -24,6 +25,7 @@ public class ProjectService {
     
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final ClienteRepository clienteRepository;
     
     @Transactional(readOnly = true)
     public List<ProjectResponse> getAllProjects() {
@@ -47,6 +49,11 @@ public class ProjectService {
         log.info("Creando proyecto: {} por usuario: {} con {} etapas", 
             request.getNombre(), currentUserDni, request.getCantidadEtapas());
 
+        String normalizedNombre = request.getNombre() != null ? request.getNombre().trim() : "";
+        if (projectRepository.existsByNombreNormalized(normalizedNombre)) {
+            throw new RuntimeException("Ya existe un proyecto con ese nombre");
+        }
+
         User currentUser = userRepository.findByDni(currentUserDni)
             .orElse(null);
         if (currentUser == null) {
@@ -63,7 +70,7 @@ public class ProjectService {
         }
 
         Project project = new Project();
-        project.setNombre(request.getNombre());
+        project.setNombre(normalizedNombre);
         project.setImagenUrl(request.getImagenUrl());
         if (request.getLogoUrl() != null) {
             project.setLogoUrl(request.getLogoUrl());
@@ -90,11 +97,16 @@ public class ProjectService {
     @Transactional
     public ProjectResponse updateProject(Long projectId, ProjectRequest request) {
         log.info("Actualizando proyecto ID: {} con {} etapas", projectId, request.getCantidadEtapas());
+
+        String normalizedNombre = request.getNombre() != null ? request.getNombre().trim() : "";
+        if (projectRepository.existsByNombreNormalizedAndIdNot(normalizedNombre, projectId)) {
+            throw new RuntimeException("Ya existe un proyecto con ese nombre");
+        }
         
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado con ID: " + projectId));
         
-        project.setNombre(request.getNombre());
+        project.setNombre(normalizedNombre);
         project.setImagenUrl(request.getImagenUrl());
         project.setLogoUrl(request.getLogoUrl());
         
@@ -135,6 +147,10 @@ public class ProjectService {
         
         if (!projectRepository.existsById(projectId)) {
             throw new RuntimeException("Proyecto no encontrado con ID: " + projectId);
+        }
+
+        if (clienteRepository.existsByProjectId(projectId)) {
+            throw new RuntimeException("No se puede eliminar este proyecto porque tiene lotes ya adquiridos o separados por clientes");
         }
         
         projectRepository.deleteById(projectId);

@@ -12,9 +12,11 @@ import lombok.NoArgsConstructor;
 public class AuthResponse {
     private String token;
     private String dni;
+    private String email;
     private String nombres;
     private String primerApellido;
     private String segundoApellido;
     private String role;
     private String message;
+    private Boolean requirePasswordChange;
 }

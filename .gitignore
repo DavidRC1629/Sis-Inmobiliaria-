@@ -1,0 +1,16 @@
+# Build outputs
+backend/target/
+frontsisarovi/dist/
+frontsisarovi/.angular/
+
+# Dependencies
+node_modules/
+frontsisarovi/node_modules/
+
+# Logs
+*.log
+backend/*.log
+frontsisarovi/*.log
+
+# IDE
+.vscode/
