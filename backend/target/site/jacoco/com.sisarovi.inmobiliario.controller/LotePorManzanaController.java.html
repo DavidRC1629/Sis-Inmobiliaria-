@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LotePorManzanaController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Sistema Inmobiliario Backend</a> &gt; <a href="index.source.html" class="el_package">com.sisarovi.inmobiliario.controller</a> &gt; <span class="el_source">LotePorManzanaController.java</span></div><h1>LotePorManzanaController.java</h1><pre class="source lang-java linenums">package com.sisarovi.inmobiliario.controller;
+
+import com.sisarovi.inmobiliario.dto.LoteResponse;
+import com.sisarovi.inmobiliario.entity.Lote;
+import com.sisarovi.inmobiliario.repository.ClienteRepository;
+import com.sisarovi.inmobiliario.repository.LoteRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/api/manzanas/{manzanaId}/lotes&quot;)
+@RequiredArgsConstructor
+public class LotePorManzanaController {
+    private final LoteRepository loteRepository;
+    private final ClienteRepository clienteRepository;
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;LoteResponse&gt;&gt; getLotesByManzana(@PathVariable Long manzanaId) {
+<span class="nc" id="L22">        List&lt;LoteResponse&gt; response = loteRepository.findByManzanaIdOrderByNumeroAsc(manzanaId)</span>
+<span class="nc" id="L23">                .stream()</span>
+<span class="nc" id="L24">                .map(this::toResponse)</span>
+<span class="nc" id="L25">                .toList();</span>
+<span class="nc" id="L26">        return ResponseEntity.ok(response);</span>
+    }
+
+    private LoteResponse toResponse(Lote lote) {
+<span class="nc" id="L30">        return LoteResponse.builder()</span>
+<span class="nc" id="L31">                .id(lote.getId())</span>
+<span class="nc" id="L32">                .numero(lote.getNumero())</span>
+<span class="nc" id="L33">                .calle(lote.getCalle())</span>
+<span class="nc" id="L34">                .perimetro(lote.getPerimetro())</span>
+<span class="nc" id="L35">                .areaM2(lote.getAreaM2())</span>
+<span class="nc" id="L36">                .medidaFrente(lote.getMedidaFrente())</span>
+<span class="nc" id="L37">                .medidaIzquierda(lote.getMedidaIzquierda())</span>
+<span class="nc" id="L38">                .medidaDerecha(lote.getMedidaDerecha())</span>
+<span class="nc" id="L39">                .medidaFondo(lote.getMedidaFondo())</span>
+<span class="nc" id="L40">                .numeroPartida(lote.getNumeroPartida())</span>
+<span class="nc" id="L41">                .precioLote(lote.getPrecioLote())</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">                .manzanaId(lote.getManzana() != null ? lote.getManzana().getId() : null)</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">                .manzana(lote.getManzana() != null ? lote.getManzana().getNombre() : null)</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">                .parcelaId(lote.getParcela() != null ? lote.getParcela().getId() : null)</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">                .parcelaNombre(lote.getParcela() != null ? lote.getParcela().getNombre() : null)</span>
+<span class="nc bnc" id="L46" title="All 4 branches missed.">                .etapaNumero(lote.getParcela() != null &amp;&amp; lote.getParcela().getEtapa() != null</span>
+<span class="nc" id="L47">                        ? lote.getParcela().getEtapa().getNumeroEtapa()</span>
+<span class="nc" id="L48">                        : null)</span>
+<span class="nc bnc" id="L49" title="All 6 branches missed.">                .projectId(lote.getParcela() != null &amp;&amp; lote.getParcela().getEtapa() != null &amp;&amp; lote.getParcela().getEtapa().getProject() != null</span>
+<span class="nc" id="L50">                        ? lote.getParcela().getEtapa().getProject().getId()</span>
+<span class="nc" id="L51">                        : null)</span>
+<span class="nc bnc" id="L52" title="All 6 branches missed.">                .projectNombre(lote.getParcela() != null &amp;&amp; lote.getParcela().getEtapa() != null &amp;&amp; lote.getParcela().getEtapa().getProject() != null</span>
+<span class="nc" id="L53">                        ? lote.getParcela().getEtapa().getProject().getNombre()</span>
+<span class="nc" id="L54">                        : null)</span>
+<span class="nc" id="L55">                .adquirido(clienteRepository.existsByLoteId(lote.getId()))</span>
+<span class="nc" id="L56">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

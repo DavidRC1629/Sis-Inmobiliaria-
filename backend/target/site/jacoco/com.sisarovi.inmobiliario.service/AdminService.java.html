@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdminService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Sistema Inmobiliario Backend</a> &gt; <a href="index.source.html" class="el_package">com.sisarovi.inmobiliario.service</a> &gt; <span class="el_source">AdminService.java</span></div><h1>AdminService.java</h1><pre class="source lang-java linenums">package com.sisarovi.inmobiliario.service;
+
+import com.sisarovi.inmobiliario.entity.User;
+import com.sisarovi.inmobiliario.entity.UserStatus;
+import com.sisarovi.inmobiliario.entity.Role;
+import com.sisarovi.inmobiliario.repository.PasswordRecoveryCodeRepository;
+import com.sisarovi.inmobiliario.repository.RoleRepository;
+import com.sisarovi.inmobiliario.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.Duration;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class AdminService {
+
+<span class="fc" id="L23">    private static final Duration REJECTION_COOLDOWN = Duration.ofHours(12);</span>
+
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordRecoveryCodeRepository passwordRecoveryCodeRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Transactional(readOnly = true)
+    public List&lt;User&gt; getPendingUsers() {
+<span class="nc" id="L32">        return userRepository.findByEstado(UserStatus.PENDIENTE);</span>
+    }
+
+    @Transactional
+    public User approveUser(Long userId) {
+<span class="nc" id="L37">        User user = userRepository.findById(userId)</span>
+<span class="nc" id="L38">                .orElseThrow(() -&gt; new RuntimeException(&quot;Usuario no encontrado con id: &quot; + userId));</span>
+        
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        if (user.getEstado() != UserStatus.PENDIENTE) {</span>
+<span class="nc" id="L41">            throw new RuntimeException(&quot;El usuario no está en estado pendiente&quot;);</span>
+        }
+        
+<span class="nc" id="L44">        user.setEstado(UserStatus.ACTIVO);</span>
+<span class="nc" id="L45">        user.setRejectionExpiresAt(null);</span>
+<span class="nc" id="L46">        return userRepository.save(user);</span>
+    }
+
+    @Transactional
+    public User rejectUser(Long userId) {
+<span class="nc" id="L51">        User user = userRepository.findById(userId)</span>
+<span class="nc" id="L52">                .orElseThrow(() -&gt; new RuntimeException(&quot;Usuario no encontrado con id: &quot; + userId));</span>
+        
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (user.getEstado() != UserStatus.PENDIENTE) {</span>
+<span class="nc" id="L55">            throw new RuntimeException(&quot;El usuario no está en estado pendiente&quot;);</span>
+        }
+        
+<span class="nc" id="L58">        user.setEstado(UserStatus.RECHAZADO);</span>
+<span class="nc" id="L59">        user.setRejectionExpiresAt(LocalDateTime.now().plus(REJECTION_COOLDOWN));</span>
+<span class="nc" id="L60">        return userRepository.save(user);</span>
+    }
+
+    @Transactional
+    public User cancelRejectionCooldown(Long userId) {
+<span class="nc" id="L65">        User user = userRepository.findById(userId)</span>
+<span class="nc" id="L66">                .orElseThrow(() -&gt; new RuntimeException(&quot;Usuario no encontrado con id: &quot; + userId));</span>
+
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (user.getEstado() != UserStatus.RECHAZADO) {</span>
+<span class="nc" id="L69">            throw new RuntimeException(&quot;El usuario no está rechazado&quot;);</span>
+        }
+
+<span class="nc" id="L72">        user.setRejectionExpiresAt(null);</span>
+<span class="nc" id="L73">        return userRepository.save(user);</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;User&gt; getRejectedWaitingUsers() {
+<span class="nc" id="L78">        return userRepository.findByEstadoAndRejectionExpiresAtAfter(UserStatus.RECHAZADO, LocalDateTime.now());</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;User&gt; getAllUsers() {
+<span class="nc" id="L83">        return userRepository.findAll();</span>
+    }
+
+    @Transactional
+    public User promoteToAdmin(Long userId) {
+<span class="nc" id="L88">        User user = userRepository.findById(userId)</span>
+<span class="nc" id="L89">                .orElseThrow(() -&gt; new RuntimeException(&quot;Usuario no encontrado con id: &quot; + userId));</span>
+
+<span class="nc" id="L91">        Role adminRole = roleRepository.findByName(&quot;ROLE_ADMIN&quot;)</span>
+<span class="nc" id="L92">                .orElseThrow(() -&gt; new RuntimeException(&quot;No se encontró el rol ROLE_ADMIN&quot;));</span>
+
+<span class="nc" id="L94">        user.setRole(adminRole);</span>
+<span class="nc" id="L95">        user.setEnabled(true);</span>
+<span class="nc" id="L96">        user.setEstado(UserStatus.ACTIVO);</span>
+<span class="nc" id="L97">        user.setRejectionExpiresAt(null);</span>
+<span class="nc" id="L98">        return userRepository.save(user);</span>
+    }
+
+    @Transactional
+    public void deleteUserWithPassword(Long userId, String adminIdentifier, String rawPassword) {
+<span class="nc" id="L103">        validarPasswordAdmin(adminIdentifier, rawPassword);</span>
+
+<span class="nc" id="L105">        User adminUser = userRepository.findByDni(adminIdentifier)</span>
+<span class="nc" id="L106">                .or(() -&gt; userRepository.findByEmailIgnoreCase(adminIdentifier))</span>
+<span class="nc" id="L107">                .orElseThrow(() -&gt; new RuntimeException(&quot;Administrador en sesión no encontrado&quot;));</span>
+
+<span class="nc" id="L109">        User userToDelete = userRepository.findById(userId)</span>
+<span class="nc" id="L110">                .orElseThrow(() -&gt; new RuntimeException(&quot;Usuario no encontrado con id: &quot; + userId));</span>
+
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (adminUser.getId().equals(userToDelete.getId())) {</span>
+<span class="nc" id="L113">            throw new RuntimeException(&quot;No puedes eliminar tu propio usuario en sesión&quot;);</span>
+        }
+
+<span class="nc" id="L116">        passwordRecoveryCodeRepository.deleteByUser(userToDelete);</span>
+<span class="nc" id="L117">        userToDelete.setEstado(UserStatus.RECHAZADO);</span>
+<span class="nc" id="L118">        userToDelete.setRejectionExpiresAt(LocalDateTime.now().plus(REJECTION_COOLDOWN));</span>
+<span class="nc" id="L119">        userToDelete.setEnabled(true);</span>
+<span class="nc" id="L120">        userRepository.save(userToDelete);</span>
+<span class="nc" id="L121">    }</span>
+
+    @Transactional(readOnly = true)
+    public void validarPasswordAdmin(String adminIdentifier, String rawPassword) {
+<span class="nc bnc" id="L125" title="All 4 branches missed.">        if (rawPassword == null || rawPassword.trim().isEmpty()) {</span>
+<span class="nc" id="L126">            throw new RuntimeException(&quot;Debes ingresar la contraseña del administrador&quot;);</span>
+        }
+
+<span class="nc" id="L129">        User adminUser = userRepository.findByDni(adminIdentifier)</span>
+<span class="nc" id="L130">                .or(() -&gt; userRepository.findByEmailIgnoreCase(adminIdentifier))</span>
+<span class="nc" id="L131">                .orElseThrow(() -&gt; new RuntimeException(&quot;Administrador en sesión no encontrado&quot;));</span>
+
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (!passwordEncoder.matches(rawPassword, adminUser.getPassword())) {</span>
+<span class="nc" id="L134">            throw new RuntimeException(&quot;Contraseña de administrador incorrecta&quot;);</span>
+        }
+<span class="nc" id="L136">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

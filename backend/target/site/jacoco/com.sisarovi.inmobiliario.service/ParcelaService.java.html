@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ParcelaService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Sistema Inmobiliario Backend</a> &gt; <a href="index.source.html" class="el_package">com.sisarovi.inmobiliario.service</a> &gt; <span class="el_source">ParcelaService.java</span></div><h1>ParcelaService.java</h1><pre class="source lang-java linenums">package com.sisarovi.inmobiliario.service;
+
+import com.sisarovi.inmobiliario.dto.ParcelaRequest;
+import com.sisarovi.inmobiliario.dto.ParcelaResponse;
+import com.sisarovi.inmobiliario.entity.Etapa;
+import com.sisarovi.inmobiliario.entity.Manzana;
+import com.sisarovi.inmobiliario.entity.Parcela;
+import com.sisarovi.inmobiliario.repository.EtapaRepository;
+import com.sisarovi.inmobiliario.repository.LoteRepository;
+import com.sisarovi.inmobiliario.repository.ManzanaRepository;
+import com.sisarovi.inmobiliario.repository.ParcelaRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L22">@Slf4j</span>
+public class ParcelaService {
+    
+    private final ParcelaRepository parcelaRepository;
+    private final EtapaRepository etapaRepository;
+    private final LoteRepository loteRepository;
+    private final ManzanaRepository manzanaRepository;
+    
+    @Transactional(readOnly = true)
+    public List&lt;ParcelaResponse&gt; getParcelasByEtapa(Long etapaId) {
+<span class="nc" id="L32">        log.info(&quot;Obteniendo parcelas de la etapa ID: {}&quot;, etapaId);</span>
+<span class="nc" id="L33">        return parcelaRepository.findByEtapaIdOrderByNombreAsc(etapaId)</span>
+<span class="nc" id="L34">                .stream()</span>
+<span class="nc" id="L35">                .map(this::toResponse)</span>
+<span class="nc" id="L36">                .collect(Collectors.toList());</span>
+    }
+    
+    @Transactional(readOnly = true)
+    public ParcelaResponse getParcelaById(Long parcelaId) {
+<span class="fc" id="L41">        log.info(&quot;Obteniendo parcela ID: {}&quot;, parcelaId);</span>
+<span class="fc" id="L42">        Parcela parcela = parcelaRepository.findById(parcelaId)</span>
+<span class="pc" id="L43">                .orElseThrow(() -&gt; new RuntimeException(&quot;Parcela no encontrada con ID: &quot; + parcelaId));</span>
+<span class="fc" id="L44">        return toResponse(parcela);</span>
+    }
+    
+    @Transactional(readOnly = true)
+    public List&lt;ParcelaResponse&gt; searchByPropietario(String propietario) {
+<span class="nc" id="L49">        log.info(&quot;Buscando parcelas por propietario: {}&quot;, propietario);</span>
+<span class="nc" id="L50">        return parcelaRepository.findByPropietarioContainingIgnoreCase(propietario)</span>
+<span class="nc" id="L51">                .stream()</span>
+<span class="nc" id="L52">                .map(this::toResponse)</span>
+<span class="nc" id="L53">                .collect(Collectors.toList());</span>
+    }
+    
+    @Transactional
+    public ParcelaResponse createParcela(Long etapaId, ParcelaRequest request) {
+<span class="fc" id="L58">        log.info(&quot;Creando parcela {} para etapa ID: {}&quot;, request.getNombre(), etapaId);</span>
+        
+<span class="fc" id="L60">        Etapa etapa = etapaRepository.findById(etapaId)</span>
+<span class="pc" id="L61">                .orElseThrow(() -&gt; new RuntimeException(&quot;Etapa no encontrada con ID: &quot; + etapaId));</span>
+        
+<span class="fc" id="L63">        Parcela parcela = new Parcela();</span>
+<span class="fc" id="L64">        parcela.setNombre(request.getNombre());</span>
+<span class="fc" id="L65">        parcela.setNumManzanas(request.getNumManzanas());</span>
+<span class="fc" id="L66">        parcela.setPropietario(request.getPropietario());</span>
+<span class="fc" id="L67">        parcela.setEtapa(etapa);</span>
+        // Asigna valor mínimo válido para numLotes
+<span class="fc" id="L69">        parcela.setNumLotes(1);</span>
+
+<span class="fc" id="L71">        Parcela saved = parcelaRepository.save(parcela);</span>
+<span class="fc" id="L72">        log.info(&quot;Parcela creada con ID: {}&quot;, saved.getId());</span>
+<span class="fc" id="L73">        ensureManzanas(parcela, request.getNumManzanas());</span>
+
+<span class="fc" id="L75">        return toResponse(saved);</span>
+    }
+    
+    @Transactional
+    public ParcelaResponse updateParcela(Long parcelaId, ParcelaRequest request) {
+<span class="nc" id="L80">        log.info(&quot;Actualizando parcela ID: {}&quot;, parcelaId);</span>
+        
+<span class="nc" id="L82">        Parcela parcela = parcelaRepository.findById(parcelaId)</span>
+<span class="nc" id="L83">                .orElseThrow(() -&gt; new RuntimeException(&quot;Parcela no encontrada con ID: &quot; + parcelaId));</span>
+        
+<span class="nc" id="L85">        parcela.setNombre(request.getNombre());</span>
+<span class="nc" id="L86">        parcela.setNumManzanas(request.getNumManzanas());</span>
+<span class="nc" id="L87">        parcela.setPropietario(request.getPropietario());</span>
+
+<span class="nc" id="L89">        ensureManzanas(parcela, request.getNumManzanas());</span>
+        
+<span class="nc" id="L91">        Parcela updated = parcelaRepository.save(parcela);</span>
+<span class="nc" id="L92">        log.info(&quot;Parcela actualizada: {}&quot;, updated.getId());</span>
+        
+<span class="nc" id="L94">        return toResponse(updated);</span>
+    }
+    
+    @Transactional
+    public void deleteParcela(Long parcelaId) {
+<span class="nc" id="L99">        log.info(&quot;Eliminando parcela ID: {}&quot;, parcelaId);</span>
+        
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (!parcelaRepository.existsById(parcelaId)) {</span>
+<span class="nc" id="L102">            throw new RuntimeException(&quot;Parcela no encontrada con ID: &quot; + parcelaId);</span>
+        }
+        
+<span class="nc" id="L105">        loteRepository.deleteAllByParcelaId(parcelaId);</span>
+<span class="nc" id="L106">        manzanaRepository.deleteAllByParcelaId(parcelaId);</span>
+<span class="nc" id="L107">        parcelaRepository.deleteById(parcelaId);</span>
+<span class="nc" id="L108">        log.info(&quot;Parcela eliminada: {}&quot;, parcelaId);</span>
+<span class="nc" id="L109">    }</span>
+    
+    private ParcelaResponse toResponse(Parcela parcela) {
+<span class="fc" id="L112">        int cantidadLotesCreados = parcela.getCantidadLotes();</span>
+<span class="fc" id="L113">        return ParcelaResponse.builder()</span>
+<span class="fc" id="L114">                .id(parcela.getId())</span>
+<span class="fc" id="L115">                .nombre(parcela.getNombre())</span>
+<span class="fc" id="L116">                .numManzanas(parcela.getNumManzanas())</span>
+<span class="fc" id="L117">                .propietario(parcela.getPropietario())</span>
+<span class="fc" id="L118">                .cantidadLotes(cantidadLotesCreados)</span>
+<span class="fc" id="L119">                .lotesDisponibles(cantidadLotesCreados)</span>
+<span class="fc" id="L120">                .etapaId(parcela.getEtapa().getId())</span>
+<span class="fc" id="L121">                .build();</span>
+    }
+
+    private void ensureManzanas(Parcela parcela, int requiredCount) {
+<span class="fc" id="L125">        List&lt;Manzana&gt; existentes = manzanaRepository.findByParcelaIdOrderByNombreAsc(parcela.getId());</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (existentes.size() &gt;= requiredCount) {</span>
+<span class="nc" id="L127">            return;</span>
+        }
+
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        for (int index = existentes.size() + 1; index &lt;= requiredCount; index++) {</span>
+<span class="fc" id="L131">            Manzana manzana = Manzana.builder()</span>
+<span class="fc" id="L132">                    .nombre(&quot;Manzana &quot; + toLetters(index))</span>
+<span class="fc" id="L133">                    .parcela(parcela)</span>
+<span class="fc" id="L134">                    .build();</span>
+<span class="fc" id="L135">            manzanaRepository.save(manzana);</span>
+        }
+<span class="fc" id="L137">    }</span>
+
+    private String toLetters(int index) {
+<span class="fc" id="L140">        StringBuilder value = new StringBuilder();</span>
+<span class="fc" id="L141">        int n = index;</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">        while (n &gt; 0) {</span>
+<span class="fc" id="L143">            int remainder = (n - 1) % 26;</span>
+<span class="fc" id="L144">            value.insert(0, (char) ('A' + remainder));</span>
+<span class="fc" id="L145">            n = (n - 1) / 26;</span>
+<span class="fc" id="L146">        }</span>
+<span class="fc" id="L147">        return value.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

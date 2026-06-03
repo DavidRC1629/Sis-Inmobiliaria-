@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TerrenoPropioController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Sistema Inmobiliario Backend</a> &gt; <a href="index.source.html" class="el_package">com.sisarovi.inmobiliario.controller</a> &gt; <span class="el_source">TerrenoPropioController.java</span></div><h1>TerrenoPropioController.java</h1><pre class="source lang-java linenums">package com.sisarovi.inmobiliario.controller;
+
+import com.sisarovi.inmobiliario.dto.TerrenoPropioRequest;
+import com.sisarovi.inmobiliario.dto.TerrenoPropioResponse;
+import com.sisarovi.inmobiliario.dto.AdquisicionTerrenoRequest;
+import com.sisarovi.inmobiliario.service.TerrenoPropioService;
+import com.sisarovi.inmobiliario.service.RegistroAuditoriaService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/api/terrenos-propios&quot;)
+@RequiredArgsConstructor
+<span class="fc" id="L20">@Slf4j</span>
+public class TerrenoPropioController {
+    private final TerrenoPropioService terrenoPropioService;
+    private final RegistroAuditoriaService registroAuditoriaService;
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;TerrenoPropioResponse&gt;&gt; getAll() {
+<span class="nc" id="L27">        return ResponseEntity.ok(terrenoPropioService.getAll());</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;TerrenoPropioResponse&gt; getById(@PathVariable Long id) {
+<span class="nc" id="L32">        return terrenoPropioService.getById(id)</span>
+<span class="nc" id="L33">                .map(ResponseEntity::ok)</span>
+<span class="nc" id="L34">                .orElse(ResponseEntity.notFound().build());</span>
+    }
+
+    @PostMapping
+    public ResponseEntity&lt;TerrenoPropioResponse&gt; create(@Valid @RequestBody TerrenoPropioRequest request) {
+<span class="nc" id="L39">        TerrenoPropioResponse creado = terrenoPropioService.create(request);</span>
+<span class="nc" id="L40">        registroAuditoriaService.registrarAccion(</span>
+<span class="nc" id="L41">            String.valueOf(request.getPropietarioId()),</span>
+            &quot;CREATE&quot;,
+<span class="nc" id="L43">            String.format(&quot;Se creó el terreno propio con partida '%s'&quot;, request.getNumeroPartida())</span>
+        );
+<span class="nc" id="L45">        return ResponseEntity.status(HttpStatus.CREATED).body(creado);</span>
+    }
+
+    @GetMapping(&quot;/exists/partida/{numeroPartida}&quot;)
+    public ResponseEntity&lt;Boolean&gt; existsByNumeroPartida(@PathVariable String numeroPartida) {
+<span class="nc" id="L50">        return ResponseEntity.ok(terrenoPropioService.existsByNumeroPartida(numeroPartida));</span>
+    }
+
+    // Subida de imagen
+    @PostMapping(&quot;/{id}/imagen&quot;)
+    public ResponseEntity&lt;String&gt; uploadImagen(@PathVariable Long id, @RequestParam(&quot;file&quot;) MultipartFile file) {
+<span class="nc" id="L56">        String url = terrenoPropioService.uploadImagen(id, file);</span>
+<span class="nc" id="L57">        return ResponseEntity.ok(url);</span>
+    }
+
+    // Eliminar imagen
+    @DeleteMapping(&quot;/{id}/imagen&quot;)
+    public ResponseEntity&lt;Void&gt; deleteImagen(@PathVariable Long id) {
+<span class="nc" id="L63">        terrenoPropioService.deleteImagen(id);</span>
+<span class="nc" id="L64">        return ResponseEntity.noContent().build();</span>
+    }
+
+    // Adquirir terreno
+    @PostMapping(&quot;/{id}/adquirir&quot;)
+    public ResponseEntity&lt;Void&gt; adquirirTerreno(@PathVariable Long id, @RequestBody AdquisicionTerrenoRequest request) {
+<span class="nc" id="L70">        terrenoPropioService.adquirirTerreno(id, request.getClienteId(), request.getFormaPago(),</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">                request.getCuotas() != null ? request.getCuotas() : 1,</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                request.getInteres() != null ? request.getInteres() : 0.0);</span>
+<span class="nc" id="L73">        return ResponseEntity.ok().build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
