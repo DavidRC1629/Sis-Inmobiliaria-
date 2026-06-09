@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     tools {
-        // Nombre exacto registrado en Manage Jenkins > Tools > Maven installations
-        maven 'Maven'
+        // Nombre registrado en Manage Jenkins > Tools > Maven installations
+        maven 'MAVEN_HOME'
     }
 
     stages {
