@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoteController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Sistema Inmobiliario Backend</a> &gt; <a href="index.source.html" class="el_package">com.sisarovi.inmobiliario.controller</a> &gt; <span class="el_source">LoteController.java</span></div><h1>LoteController.java</h1><pre class="source lang-java linenums">package com.sisarovi.inmobiliario.controller;
+
+import com.sisarovi.inmobiliario.dto.LoteRequest;
+import com.sisarovi.inmobiliario.dto.LoteResponse;
+import com.sisarovi.inmobiliario.service.LoteService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/api/parcelas/{parcelaId}/lotes&quot;)
+@RequiredArgsConstructor
+public class LoteController {
+    
+    private final LoteService loteService;
+    
+    @GetMapping
+    public ResponseEntity&lt;List&lt;LoteResponse&gt;&gt; getLotesByParcela(@PathVariable Long parcelaId) {
+<span class="nc" id="L23">        return ResponseEntity.ok(loteService.getLotesByParcela(parcelaId));</span>
+    }
+    
+    @GetMapping(&quot;/manzana/{manzana}&quot;)
+    public ResponseEntity&lt;List&lt;LoteResponse&gt;&gt; getLotesByManzana(
+            @PathVariable Long parcelaId,
+            @PathVariable String manzana) {
+<span class="nc" id="L30">        return ResponseEntity.ok(loteService.getLotesByParcelaAndManzana(parcelaId, manzana));</span>
+    }
+    
+    @GetMapping(&quot;/{loteId}&quot;)
+    public ResponseEntity&lt;LoteResponse&gt; getLoteById(@PathVariable Long parcelaId, @PathVariable Long loteId) {
+<span class="nc" id="L35">        return ResponseEntity.ok(loteService.getLoteById(loteId));</span>
+    }
+
+    @GetMapping(&quot;/numero-partida/existe&quot;)
+    public ResponseEntity&lt;Boolean&gt; existsNumeroPartida(
+            @PathVariable Long parcelaId,
+            @RequestParam String numeroPartida,
+            @RequestParam(required = false) Long excludeLoteId) {
+<span class="nc" id="L43">        return ResponseEntity.ok(loteService.existsNumeroPartidaGlobal(numeroPartida, excludeLoteId));</span>
+    }
+    
+    @PostMapping
+    public ResponseEntity&lt;LoteResponse&gt; createLote(
+            @PathVariable Long parcelaId,
+            @Valid @RequestBody LoteRequest request) {
+<span class="nc" id="L50">        return ResponseEntity.status(HttpStatus.CREATED)</span>
+<span class="nc" id="L51">                .body(loteService.createLote(parcelaId, request));</span>
+    }
+    
+    @PutMapping(&quot;/{loteId}&quot;)
+    public ResponseEntity&lt;LoteResponse&gt; updateLote(
+            @PathVariable Long parcelaId,
+            @PathVariable Long loteId,
+            @Valid @RequestBody LoteRequest request) {
+<span class="nc" id="L59">        return ResponseEntity.ok(loteService.updateLote(loteId, request));</span>
+    }
+    
+    @DeleteMapping(&quot;/{loteId}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteLote(@PathVariable Long parcelaId, @PathVariable Long loteId) {
+<span class="nc" id="L64">        loteService.deleteLote(loteId);</span>
+<span class="nc" id="L65">        return ResponseEntity.noContent().build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

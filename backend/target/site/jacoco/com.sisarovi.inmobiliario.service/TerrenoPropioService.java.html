@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TerrenoPropioService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Sistema Inmobiliario Backend</a> &gt; <a href="index.source.html" class="el_package">com.sisarovi.inmobiliario.service</a> &gt; <span class="el_source">TerrenoPropioService.java</span></div><h1>TerrenoPropioService.java</h1><pre class="source lang-java linenums">package com.sisarovi.inmobiliario.service;
+
+import com.sisarovi.inmobiliario.dto.TerrenoPropioRequest;
+import com.sisarovi.inmobiliario.dto.TerrenoPropioResponse;
+import com.sisarovi.inmobiliario.entity.Cliente;
+import com.sisarovi.inmobiliario.entity.TerrenoPropio;
+import com.sisarovi.inmobiliario.repository.ClienteRepository;
+import com.sisarovi.inmobiliario.repository.TerrenoPropioRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.IOException;
+import com.sisarovi.inmobiliario.service.RegistroAuditoriaService;
+import com.sisarovi.inmobiliario.service.CronogramaService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+@Service
+@RequiredArgsConstructor
+public class TerrenoPropioService {
+    private final TerrenoPropioRepository terrenoPropioRepository;
+    private final ClienteRepository clienteRepository;
+    @Autowired
+    private RegistroAuditoriaService registroAuditoriaService;
+    @Autowired
+    private CronogramaService cronogramaService;
+
+    public List&lt;TerrenoPropioResponse&gt; getAll() {
+<span class="nc" id="L35">        return terrenoPropioRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());</span>
+    }
+
+    public Optional&lt;TerrenoPropioResponse&gt; getById(Long id) {
+<span class="nc" id="L39">        return terrenoPropioRepository.findById(id).map(this::toResponse);</span>
+    }
+
+    @Transactional
+    public TerrenoPropioResponse create(TerrenoPropioRequest request) {
+<span class="nc" id="L44">        String numeroPartida = normalizeAndValidateNumeroPartida(request.getNumeroPartida());</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (terrenoPropioRepository.existsByNumeroPartida(numeroPartida)) {</span>
+<span class="nc" id="L46">            throw new IllegalArgumentException(&quot;El número de partida ya existe en el sistema&quot;);</span>
+        }
+<span class="nc" id="L48">        Cliente propietario = clienteRepository.findById(request.getPropietarioId())</span>
+<span class="nc" id="L49">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Propietario no encontrado&quot;));</span>
+<span class="nc" id="L50">        TerrenoPropio terreno = TerrenoPropio.builder()</span>
+<span class="nc" id="L51">                .numeroLote(request.getNumeroLote())</span>
+<span class="nc" id="L52">                .calle(request.getCalle())</span>
+<span class="nc" id="L53">                .areaM2(request.getAreaM2())</span>
+<span class="nc" id="L54">                .perimetro(request.getPerimetro())</span>
+<span class="nc" id="L55">                .medidaFrente(request.getMedidaFrente())</span>
+<span class="nc" id="L56">                .medidaFondo(request.getMedidaFondo())</span>
+<span class="nc" id="L57">                .medidaIzquierda(request.getMedidaIzquierda())</span>
+<span class="nc" id="L58">                .medidaDerecha(request.getMedidaDerecha())</span>
+<span class="nc" id="L59">                .numeroPartida(numeroPartida)</span>
+<span class="nc" id="L60">                .precio(request.getPrecio())</span>
+<span class="nc" id="L61">                .propietario(propietario)</span>
+<span class="nc" id="L62">                .imagenUrl(request.getImagenUrl())</span>
+<span class="nc" id="L63">                .estado(&quot;DISPONIBLE&quot;)</span>
+<span class="nc" id="L64">                .build();</span>
+<span class="nc" id="L65">        terrenoPropioRepository.save(terreno);</span>
+<span class="nc" id="L66">        return toResponse(terreno);</span>
+    }
+
+    public boolean existsByNumeroPartida(String numeroPartida) {
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        String normalized = numeroPartida == null ? &quot;&quot; : numeroPartida.trim();</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (!normalized.matches(&quot;^[0-9]{1,8}$&quot;)) {</span>
+<span class="nc" id="L72">            return false;</span>
+        }
+<span class="nc" id="L74">        return terrenoPropioRepository.existsByNumeroPartida(normalized);</span>
+    }
+
+    private String normalizeAndValidateNumeroPartida(String numeroPartida) {
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        String normalized = numeroPartida == null ? &quot;&quot; : numeroPartida.trim();</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (normalized.isEmpty()) {</span>
+<span class="nc" id="L80">            throw new IllegalArgumentException(&quot;El número de partida es obligatorio&quot;);</span>
+        }
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (!normalized.matches(&quot;^[0-9]+$&quot;)) {</span>
+<span class="nc" id="L83">            throw new IllegalArgumentException(&quot;El número de partida solo debe contener números&quot;);</span>
+        }
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (normalized.length() &gt; 8) {</span>
+<span class="nc" id="L86">            throw new IllegalArgumentException(&quot;El número de partida debe tener como máximo 8 dígitos&quot;);</span>
+        }
+<span class="nc" id="L88">        return normalized;</span>
+    }
+
+    private TerrenoPropioResponse toResponse(TerrenoPropio t) {
+<span class="nc" id="L92">        return new TerrenoPropioResponse(</span>
+<span class="nc" id="L93">                t.getId(),</span>
+<span class="nc" id="L94">                t.getNumeroLote(),</span>
+<span class="nc" id="L95">                t.getCalle(),</span>
+<span class="nc" id="L96">                t.getAreaM2(),</span>
+<span class="nc" id="L97">                t.getPerimetro(),</span>
+<span class="nc" id="L98">                t.getMedidaFrente(),</span>
+<span class="nc" id="L99">                t.getMedidaFondo(),</span>
+<span class="nc" id="L100">                t.getMedidaIzquierda(),</span>
+<span class="nc" id="L101">                t.getMedidaDerecha(),</span>
+<span class="nc" id="L102">                t.getNumeroPartida(),</span>
+<span class="nc" id="L103">                t.getPrecio(),</span>
+                // Mapear propietario a ClienteResponse si es necesario
+                null,
+<span class="nc" id="L106">                t.getImagenUrl(),</span>
+<span class="nc" id="L107">                t.getEstado()</span>
+        );
+    }
+
+    public String uploadImagen(Long id, MultipartFile file) {
+<span class="nc" id="L112">        TerrenoPropio terreno = terrenoPropioRepository.findById(id)</span>
+<span class="nc" id="L113">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Terreno propio no encontrado&quot;));</span>
+<span class="nc" id="L114">        String folder = &quot;uploads/terrenos_propios/&quot;;</span>
+<span class="nc" id="L115">        String filename = &quot;terreno_&quot; + id + &quot;_&quot; + System.currentTimeMillis() + &quot;_&quot; + file.getOriginalFilename();</span>
+<span class="nc" id="L116">        Path uploadPath = Paths.get(folder);</span>
+        try {
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            if (!Files.exists(uploadPath)) {</span>
+<span class="nc" id="L119">                Files.createDirectories(uploadPath);</span>
+            }
+<span class="nc" id="L121">            Path filePath = uploadPath.resolve(filename);</span>
+<span class="nc" id="L122">            file.transferTo(filePath);</span>
+<span class="nc" id="L123">            String url = &quot;/&quot; + folder + filename;</span>
+<span class="nc" id="L124">            terreno.setImagenUrl(url);</span>
+<span class="nc" id="L125">            terrenoPropioRepository.save(terreno);</span>
+<span class="nc" id="L126">            return url;</span>
+<span class="nc" id="L127">        } catch (IOException e) {</span>
+<span class="nc" id="L128">            throw new RuntimeException(&quot;Error al guardar la imagen&quot;, e);</span>
+        }
+    }
+
+    public void deleteImagen(Long id) {
+<span class="nc" id="L133">        TerrenoPropio terreno = terrenoPropioRepository.findById(id)</span>
+<span class="nc" id="L134">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Terreno propio no encontrado&quot;));</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        if (terreno.getImagenUrl() != null) {</span>
+            try {
+<span class="nc" id="L137">                Path filePath = Paths.get(terreno.getImagenUrl().replaceFirst(&quot;/&quot;, &quot;&quot;));</span>
+<span class="nc" id="L138">                Files.deleteIfExists(filePath);</span>
+<span class="nc" id="L139">            } catch (IOException e) {</span>
+                // Log y continuar
+<span class="nc" id="L141">            }</span>
+<span class="nc" id="L142">            terreno.setImagenUrl(null);</span>
+<span class="nc" id="L143">            terrenoPropioRepository.save(terreno);</span>
+        }
+<span class="nc" id="L145">    }</span>
+
+    @Transactional
+    public void adquirirTerreno(Long terrenoId, Long clienteId, String formaPago, int cuotas, double interes) {
+<span class="nc" id="L149">        TerrenoPropio terreno = terrenoPropioRepository.findById(terrenoId)</span>
+<span class="nc" id="L150">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Terreno propio no encontrado&quot;));</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">        if (!&quot;DISPONIBLE&quot;.equals(terreno.getEstado())) {</span>
+<span class="nc" id="L152">            throw new IllegalStateException(&quot;El terreno no está disponible para adquisición&quot;);</span>
+        }
+<span class="nc" id="L154">        terreno.setEstado(&quot;VENDIDO&quot;);</span>
+<span class="nc" id="L155">        terrenoPropioRepository.save(terreno);</span>
+        // Registrar ingreso en auditoría
+<span class="nc" id="L157">        registroAuditoriaService.registrarAccion(</span>
+<span class="nc" id="L158">            String.valueOf(clienteId),</span>
+            &quot;INGRESO&quot;,
+<span class="nc" id="L160">            String.format(&quot;Ingreso por adquisición de Terreno Propio (Partida: %s)&quot;, terreno.getNumeroPartida())</span>
+        );
+        // Crear cronograma (al contado o en cuotas)
+<span class="nc" id="L163">        cronogramaService.crearCronogramaParaTerrenoPropio(terreno, clienteId, formaPago, cuotas, interes);</span>
+<span class="nc" id="L164">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

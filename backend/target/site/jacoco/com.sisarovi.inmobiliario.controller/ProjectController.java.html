@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProjectController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Sistema Inmobiliario Backend</a> &gt; <a href="index.source.html" class="el_package">com.sisarovi.inmobiliario.controller</a> &gt; <span class="el_source">ProjectController.java</span></div><h1>ProjectController.java</h1><pre class="source lang-java linenums">package com.sisarovi.inmobiliario.controller;
+
+import com.sisarovi.inmobiliario.dto.ProjectRequest;
+import com.sisarovi.inmobiliario.dto.ProjectResponse;
+import com.sisarovi.inmobiliario.service.ProjectService;
+import com.sisarovi.inmobiliario.service.RegistroAuditoriaService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+@RestController
+@RequestMapping(&quot;/api/projects&quot;)
+@RequiredArgsConstructor
+<span class="fc" id="L24">@Slf4j</span>
+public class ProjectController {
+    
+    private final ProjectService projectService;
+    private final RegistroAuditoriaService registroAuditoriaService;
+    
+        @GetMapping
+        public ResponseEntity&lt;List&lt;ProjectResponse&gt;&gt; getAllProjects() {
+<span class="nc" id="L32">            return ResponseEntity.ok(projectService.getAllProjects());</span>
+        }
+    
+    @GetMapping(&quot;/{projectId}&quot;)
+    public ResponseEntity&lt;ProjectResponse&gt; getProjectById(@PathVariable Long projectId) {
+<span class="nc" id="L37">        return ResponseEntity.ok(projectService.getProjectById(projectId));</span>
+    }
+    
+        @PreAuthorize(&quot;hasRole('ADMIN')&quot;)
+        @PostMapping
+        public ResponseEntity&lt;ProjectResponse&gt; createProject(
+            @Valid @RequestBody ProjectRequest request,
+            Authentication authentication) {
+<span class="nc" id="L45">        log.info(&quot;🔵 POST /api/projects - Usuario: {}, Authorities: {}&quot;, </span>
+<span class="nc" id="L46">                authentication.getName(), authentication.getAuthorities());</span>
+<span class="nc" id="L47">        log.info(&quot;📦 Request: nombre={}, cantidadEtapas={}&quot;, request.getNombre(), request.getCantidadEtapas());</span>
+        
+<span class="nc" id="L49">        String currentUserDni = authentication.getName();</span>
+<span class="nc" id="L50">        ProjectResponse created = projectService.createProject(request, currentUserDni);</span>
+<span class="nc" id="L51">        registroAuditoriaService.registrarAccion(</span>
+            currentUserDni,
+            &quot;CREATE&quot;,
+<span class="nc" id="L54">            String.format(&quot;Se creó el proyecto '%s'.&quot;, created.getNombre())</span>
+        );
+<span class="nc" id="L56">        return ResponseEntity.status(HttpStatus.CREATED).body(created);</span>
+    }
+    
+        @PreAuthorize(&quot;hasRole('ADMIN')&quot;)
+        @PutMapping(&quot;/{projectId}&quot;)
+        public ResponseEntity&lt;ProjectResponse&gt; updateProject(
+            @PathVariable Long projectId,
+            @Valid @RequestBody ProjectRequest request,
+            Authentication authentication) {
+<span class="nc" id="L65">        log.info(&quot;🟠 PUT /api/projects/{} - Datos recibidos:&quot;, projectId);</span>
+<span class="nc" id="L66">        log.info(&quot;📦 nombre={}, cantidadEtapas={}, imagenUrl={}&quot;, </span>
+<span class="nc" id="L67">                request.getNombre(), request.getCantidadEtapas(), </span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">                request.getImagenUrl() != null ? &quot;presente&quot; : &quot;null&quot;);</span>
+
+<span class="nc" id="L70">        ProjectResponse beforeUpdate = projectService.getProjectById(projectId);</span>
+        
+<span class="nc" id="L72">        ProjectResponse response = projectService.updateProject(projectId, request);</span>
+<span class="nc" id="L73">        String descripcionCambios = construirDescripcionCambiosProyecto(beforeUpdate, response, request);</span>
+
+<span class="nc" id="L75">        registroAuditoriaService.registrarAccion(</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">            authentication != null ? authentication.getName() : &quot;ANONIMO&quot;,</span>
+            &quot;UPDATE&quot;,
+            descripcionCambios
+        );
+        
+<span class="nc" id="L81">        log.info(&quot;✅ Proyecto actualizado - ID: {}, Etapas: {}&quot;, </span>
+<span class="nc" id="L82">                response.getId(), response.getCantidadEtapas());</span>
+        
+<span class="nc" id="L84">        return ResponseEntity.ok(response);</span>
+    }
+    
+    @PreAuthorize(&quot;hasRole('ADMIN')&quot;)
+    @DeleteMapping(&quot;/{projectId}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteProject(@PathVariable Long projectId, Authentication authentication) {
+<span class="nc" id="L90">        ProjectResponse beforeDelete = projectService.getProjectById(projectId);</span>
+<span class="nc" id="L91">        projectService.deleteProject(projectId);</span>
+<span class="nc" id="L92">        registroAuditoriaService.registrarAccion(</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">                authentication != null ? authentication.getName() : &quot;ANONIMO&quot;,</span>
+                &quot;DELETE&quot;,
+<span class="nc" id="L95">            String.format(&quot;Se eliminó el proyecto '%s'.&quot;, beforeDelete.getNombre())</span>
+        );
+<span class="nc" id="L97">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @PreAuthorize(&quot;hasRole('ADMIN')&quot;)
+    @PutMapping(&quot;/{projectId}/logo&quot;)
+    public ResponseEntity&lt;ProjectResponse&gt; updateProjectLogo(
+            @PathVariable Long projectId,
+            @RequestBody Map&lt;String, String&gt; request,
+            Authentication authentication) {
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        String logoUrl = request != null ? request.getOrDefault(&quot;logoUrl&quot;, &quot;&quot;) : &quot;&quot;;</span>
+<span class="nc" id="L107">        ProjectResponse updated = projectService.updateProjectLogo(projectId, logoUrl);</span>
+<span class="nc bnc" id="L108" title="All 4 branches missed.">        String accion = logoUrl == null || logoUrl.trim().isEmpty() ? &quot;eliminó&quot; : &quot;actualizó&quot;;</span>
+<span class="nc" id="L109">        registroAuditoriaService.registrarAccion(</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">                authentication != null ? authentication.getName() : &quot;ANONIMO&quot;,</span>
+                &quot;UPDATE&quot;,
+<span class="nc" id="L112">            String.format(&quot;Se %s el logo del proyecto '%s'.&quot;, accion, updated.getNombre())</span>
+        );
+<span class="nc" id="L114">        return ResponseEntity.ok(updated);</span>
+    }
+
+    private String construirDescripcionCambiosProyecto(ProjectResponse beforeUpdate, ProjectResponse afterUpdate, ProjectRequest request) {
+<span class="nc" id="L118">        List&lt;String&gt; cambios = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L120">        String nombreAnterior = limpiarTexto(beforeUpdate.getNombre());</span>
+<span class="nc" id="L121">        String nombreNuevo = limpiarTexto(request.getNombre());</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        if (!Objects.equals(nombreAnterior, nombreNuevo)) {</span>
+<span class="nc" id="L123">            cambios.add(String.format(&quot;Se cambió el nombre del proyecto de '%s' a '%s'&quot;, nombreAnterior, nombreNuevo));</span>
+        }
+
+<span class="nc" id="L126">        Integer etapasAnteriores = beforeUpdate.getCantidadEtapas();</span>
+<span class="nc" id="L127">        Integer etapasNuevas = request.getCantidadEtapas();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (!Objects.equals(etapasAnteriores, etapasNuevas)) {</span>
+<span class="nc" id="L129">            cambios.add(String.format(&quot;se cambió la cantidad de etapas de %d a %d&quot;, etapasAnteriores, etapasNuevas));</span>
+        }
+
+<span class="nc" id="L132">        String imagenAnterior = limpiarTexto(beforeUpdate.getImagenUrl());</span>
+<span class="nc" id="L133">        String imagenNueva = limpiarTexto(request.getImagenUrl());</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (!Objects.equals(imagenAnterior, imagenNueva)) {</span>
+<span class="nc" id="L135">            cambios.add(&quot;se actualizó la imagen del proyecto&quot;);</span>
+        }
+
+<span class="nc" id="L138">        String logoAnterior = limpiarTexto(beforeUpdate.getLogoUrl());</span>
+<span class="nc" id="L139">        String logoNuevo = limpiarTexto(request.getLogoUrl());</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (!Objects.equals(logoAnterior, logoNuevo)) {</span>
+<span class="nc" id="L141">            cambios.add(&quot;se actualizó el logo del proyecto&quot;);</span>
+        }
+
+<span class="nc" id="L144">        String nombreFinal = limpiarTexto(afterUpdate.getNombre());</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (cambios.isEmpty()) {</span>
+<span class="nc" id="L146">            return String.format(&quot;Se actualizó el proyecto '%s' sin cambios visibles.&quot;, nombreFinal);</span>
+        }
+
+<span class="nc" id="L149">        return String.format(&quot;Se actualizó el proyecto '%s': %s.&quot;,</span>
+                nombreFinal,
+<span class="nc" id="L151">                String.join(&quot;, &quot;, cambios));</span>
+    }
+
+    private String limpiarTexto(String valor) {
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (valor == null) {</span>
+<span class="nc" id="L156">            return &quot;&quot;;</span>
+        }
+<span class="nc" id="L158">        return valor.trim();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

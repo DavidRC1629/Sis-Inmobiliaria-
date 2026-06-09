@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CronogramaController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Sistema Inmobiliario Backend</a> &gt; <a href="index.source.html" class="el_package">com.sisarovi.inmobiliario.controller</a> &gt; <span class="el_source">CronogramaController.java</span></div><h1>CronogramaController.java</h1><pre class="source lang-java linenums">package com.sisarovi.inmobiliario.controller;
+
+import com.sisarovi.inmobiliario.dto.CronogramaContratoResponse;
+import com.sisarovi.inmobiliario.dto.CronogramaFilterRequest;
+import com.sisarovi.inmobiliario.dto.RegistrarPagoRequest;
+import com.sisarovi.inmobiliario.dto.CronogramaDescuentoRequest;
+import com.sisarovi.inmobiliario.service.CronogramaService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping(&quot;/api/cronogramas&quot;)
+@RequiredArgsConstructor
+public class CronogramaController {
+
+    private final CronogramaService cronogramaService;
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;CronogramaContratoResponse&gt;&gt; listar(
+            @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) Integer etapaNumero,
+            @RequestParam(required = false) String parcelaNombre,
+            @RequestParam(required = false) String manzana,
+            @RequestParam(required = false) Long loteId,
+            @RequestParam(required = false) String dni,
+            @RequestParam(required = false) String nombres,
+            @RequestParam(required = false) String estado) {
+
+<span class="nc" id="L34">        CronogramaFilterRequest filter = new CronogramaFilterRequest();</span>
+<span class="nc" id="L35">        filter.setProjectId(projectId);</span>
+<span class="nc" id="L36">        filter.setEtapaNumero(etapaNumero);</span>
+<span class="nc" id="L37">        filter.setParcelaNombre(parcelaNombre);</span>
+<span class="nc" id="L38">        filter.setManzana(manzana);</span>
+<span class="nc" id="L39">        filter.setLoteId(loteId);</span>
+<span class="nc" id="L40">        filter.setDni(dni);</span>
+<span class="nc" id="L41">        filter.setNombres(nombres);</span>
+<span class="nc" id="L42">        filter.setEstado(estado);</span>
+
+<span class="nc" id="L44">        return ResponseEntity.ok(cronogramaService.listar(filter));</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;CronogramaContratoResponse&gt; obtenerPorId(@PathVariable Long id) {
+<span class="nc" id="L49">        return ResponseEntity.ok(cronogramaService.obtenerPorId(id));</span>
+    }
+
+    @PostMapping(&quot;/{id}/pagos/separacion&quot;)
+    public ResponseEntity&lt;CronogramaContratoResponse&gt; registrarPagoSeparacion(
+            @PathVariable Long id,
+            @Valid @RequestBody RegistrarPagoRequest request) {
+<span class="nc" id="L56">        return ResponseEntity.ok(cronogramaService.registrarPagoSeparacion(id, request));</span>
+    }
+
+    @PostMapping(&quot;/cuotas/{cuotaId}/pagos&quot;)
+    public ResponseEntity&lt;CronogramaContratoResponse&gt; registrarPagoCuota(
+            @PathVariable Long cuotaId,
+            @Valid @RequestBody RegistrarPagoRequest request) {
+<span class="nc" id="L63">        return ResponseEntity.ok(cronogramaService.registrarPagoCuota(cuotaId, request));</span>
+    }
+
+    @PatchMapping(&quot;/{id}/asesor&quot;)
+    public ResponseEntity&lt;CronogramaContratoResponse&gt; actualizarAsesor(
+            @PathVariable Long id,
+            @RequestBody Map&lt;String, String&gt; body) {
+<span class="nc" id="L70">        String asesor = body.getOrDefault(&quot;asesor&quot;, &quot;&quot;);</span>
+<span class="nc" id="L71">        return ResponseEntity.ok(cronogramaService.actualizarAsesor(id, asesor));</span>
+    }
+
+    @PostMapping(&quot;/aplicar-descuento&quot;)
+    public ResponseEntity&lt;CronogramaContratoResponse&gt; aplicarDescuento(@Valid @RequestBody CronogramaDescuentoRequest request) {
+<span class="nc" id="L76">        CronogramaContratoResponse contrato = cronogramaService.aplicarDescuento(request);</span>
+<span class="nc" id="L77">        return ResponseEntity.ok(contrato);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

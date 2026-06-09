@@ -1,0 +1,7 @@
+com\sisarovi\inmobiliario\service\LoteServiceTest.class
+com\sisarovi\inmobiliario\service\ParcelaServiceTest.class
+com\sisarovi\inmobiliario\service\ProjectServiceTest.class
+com\sisarovi\inmobiliario\service\EtapaServiceTest.class
+com\sisarovi\inmobiliario\service\LiberacionServiceTest.class
+com\sisarovi\inmobiliario\service\ClienteServiceTest.class
+com\sisarovi\inmobiliario\AppTest.class

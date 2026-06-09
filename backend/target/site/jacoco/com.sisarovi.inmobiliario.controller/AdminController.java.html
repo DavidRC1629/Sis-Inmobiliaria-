@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdminController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Sistema Inmobiliario Backend</a> &gt; <a href="index.source.html" class="el_package">com.sisarovi.inmobiliario.controller</a> &gt; <span class="el_source">AdminController.java</span></div><h1>AdminController.java</h1><pre class="source lang-java linenums">package com.sisarovi.inmobiliario.controller;
+
+import com.sisarovi.inmobiliario.dto.DeleteUserRequest;
+import com.sisarovi.inmobiliario.entity.User;
+import com.sisarovi.inmobiliario.service.AdminService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/api/admin&quot;)
+@RequiredArgsConstructor
+@PreAuthorize(&quot;hasRole('ADMIN')&quot;)
+public class AdminController {
+
+    private final AdminService adminService;
+
+    @GetMapping(&quot;/users/pending&quot;)
+    public ResponseEntity&lt;List&lt;User&gt;&gt; getPendingUsers() {
+<span class="nc" id="L24">        return ResponseEntity.ok(adminService.getPendingUsers());</span>
+    }
+
+    @GetMapping(&quot;/users/waiting&quot;)
+    public ResponseEntity&lt;List&lt;User&gt;&gt; getRejectedWaitingUsers() {
+<span class="nc" id="L29">        return ResponseEntity.ok(adminService.getRejectedWaitingUsers());</span>
+    }
+
+    @PostMapping(&quot;/users/{userId}/approve&quot;)
+    public ResponseEntity&lt;User&gt; approveUser(@PathVariable Long userId) {
+<span class="nc" id="L34">        return ResponseEntity.ok(adminService.approveUser(userId));</span>
+    }
+
+    @PostMapping(&quot;/users/{userId}/reject&quot;)
+    public ResponseEntity&lt;User&gt; rejectUser(@PathVariable Long userId) {
+<span class="nc" id="L39">        return ResponseEntity.ok(adminService.rejectUser(userId));</span>
+    }
+
+    @PostMapping(&quot;/users/{userId}/cancel-wait&quot;)
+    public ResponseEntity&lt;User&gt; cancelRejectionCooldown(@PathVariable Long userId) {
+<span class="nc" id="L44">        return ResponseEntity.ok(adminService.cancelRejectionCooldown(userId));</span>
+    }
+
+    @PostMapping(&quot;/users/{userId}/promote&quot;)
+    public ResponseEntity&lt;User&gt; promoteToAdmin(@PathVariable Long userId) {
+<span class="nc" id="L49">        return ResponseEntity.ok(adminService.promoteToAdmin(userId));</span>
+    }
+
+    @GetMapping(&quot;/users&quot;)
+    public ResponseEntity&lt;List&lt;User&gt;&gt; getAllUsers() {
+<span class="nc" id="L54">        return ResponseEntity.ok(adminService.getAllUsers());</span>
+    }
+
+    @DeleteMapping(&quot;/users/{userId}/with-password&quot;)
+    public ResponseEntity&lt;Void&gt; deleteUserWithPassword(
+            @PathVariable Long userId,
+            @RequestBody DeleteUserRequest request,
+            Authentication authentication
+    ) {
+<span class="nc" id="L63">        adminService.deleteUserWithPassword(userId, authentication.getName(), request.getPassword());</span>
+<span class="nc" id="L64">        return ResponseEntity.noContent().build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

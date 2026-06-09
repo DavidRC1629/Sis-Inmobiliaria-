@@ -1,0 +1,2 @@
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS rejection_expires_at DATETIME NULL;

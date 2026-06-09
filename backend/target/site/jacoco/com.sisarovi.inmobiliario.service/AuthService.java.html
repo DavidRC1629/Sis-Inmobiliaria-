@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Sistema Inmobiliario Backend</a> &gt; <a href="index.source.html" class="el_package">com.sisarovi.inmobiliario.service</a> &gt; <span class="el_source">AuthService.java</span></div><h1>AuthService.java</h1><pre class="source lang-java linenums">package com.sisarovi.inmobiliario.service;
+
+import com.sisarovi.inmobiliario.dto.AuthResponse;
+import com.sisarovi.inmobiliario.dto.LoginRequest;
+import com.sisarovi.inmobiliario.dto.RegisterRequest;
+import com.sisarovi.inmobiliario.entity.PasswordRecoveryCode;
+import com.sisarovi.inmobiliario.entity.Role;
+import com.sisarovi.inmobiliario.entity.User;
+import com.sisarovi.inmobiliario.entity.UserStatus;
+import com.sisarovi.inmobiliario.repository.PasswordRecoveryCodeRepository;
+import com.sisarovi.inmobiliario.repository.RoleRepository;
+import com.sisarovi.inmobiliario.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.security.SecureRandom;
+
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+        private final PasswordRecoveryCodeRepository passwordRecoveryCodeRepository;
+        private final RecoveryEmailService recoveryEmailService;
+
+    public AuthResponse register(RegisterRequest request) {
+<span class="nc" id="L42">                                User existingUser = userRepository.findByDni(request.getDni()).orElse(null);</span>
+
+<span class="nc bnc" id="L44" title="All 4 branches missed.">                if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {</span>
+<span class="nc" id="L45">                        throw new RuntimeException(&quot;El correo es obligatorio&quot;);</span>
+                }
+<span class="nc" id="L47">                String normalizedEmail = request.getEmail().trim().toLowerCase();</span>
+
+<span class="nc" id="L49">                User existingByEmail = userRepository.findByEmailIgnoreCase(normalizedEmail).orElse(null);</span>
+<span class="nc bnc" id="L50" title="All 6 branches missed.">                if (existingByEmail != null &amp;&amp; (existingUser == null || !existingByEmail.getId().equals(existingUser.getId()))) {</span>
+<span class="nc" id="L51">                        throw new RuntimeException(&quot;No se puede crear una cuenta con un correo que ya existe&quot;);</span>
+                }
+
+<span class="nc" id="L54">        Role userRole = roleRepository.findByName(&quot;ROLE_USER&quot;)</span>
+<span class="nc" id="L55">                .orElseThrow(() -&gt; new RuntimeException(&quot;Rol USER no encontrado&quot;));</span>
+
+<span class="nc bnc" id="L57" title="All 2 branches missed.">                if (existingUser != null) {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">                        if (existingUser.getEstado() == UserStatus.ACTIVO) {</span>
+<span class="nc" id="L59">                                throw new RuntimeException(&quot;El DNI ya está registrado&quot;);</span>
+                        }
+
+<span class="nc bnc" id="L62" title="All 2 branches missed.">                        if (existingUser.getEstado() == UserStatus.PENDIENTE) {</span>
+<span class="nc" id="L63">                                throw new RuntimeException(&quot;Ya existe una solicitud pendiente con este DNI&quot;);</span>
+                        }
+
+<span class="nc bnc" id="L66" title="All 2 branches missed.">                        if (existingUser.getEstado() == UserStatus.RECHAZADO) {</span>
+<span class="nc" id="L67">                                LocalDateTime now = LocalDateTime.now();</span>
+<span class="nc" id="L68">                                LocalDateTime rejectionExpiresAt = existingUser.getRejectionExpiresAt();</span>
+
+<span class="nc bnc" id="L70" title="All 4 branches missed.">                                if (rejectionExpiresAt != null &amp;&amp; rejectionExpiresAt.isAfter(now)) {</span>
+<span class="nc" id="L71">                                        long remainingHours = Math.max(1, Duration.between(now, rejectionExpiresAt).toHours());</span>
+<span class="nc" id="L72">                                        throw new RuntimeException(&quot;Este DNI fue rechazado recientemente. Podrás volver a registrar una solicitud en &quot; + remainingHours + &quot; hora(s).&quot;);</span>
+                                }
+
+<span class="nc" id="L75">                                existingUser.setPassword(passwordEncoder.encode(request.getPassword()));</span>
+<span class="nc" id="L76">                                existingUser.setNombres(request.getNombres());</span>
+<span class="nc" id="L77">                                existingUser.setPrimerApellido(request.getPrimerApellido());</span>
+<span class="nc" id="L78">                                existingUser.setSegundoApellido(request.getSegundoApellido());</span>
+<span class="nc" id="L79">                                existingUser.setEmail(normalizedEmail);</span>
+<span class="nc" id="L80">                                existingUser.setRole(userRole);</span>
+<span class="nc" id="L81">                                existingUser.setEstado(UserStatus.PENDIENTE);</span>
+<span class="nc" id="L82">                                existingUser.setEnabled(true);</span>
+<span class="nc" id="L83">                                existingUser.setRejectionExpiresAt(null);</span>
+
+<span class="nc" id="L85">                                User savedUser = userRepository.save(existingUser);</span>
+<span class="nc" id="L86">                                return buildAuthResponse(savedUser);</span>
+                        }
+                }
+
+<span class="nc" id="L90">        var user = User.builder()</span>
+<span class="nc" id="L91">                .dni(request.getDni())</span>
+<span class="nc" id="L92">                .email(normalizedEmail)</span>
+<span class="nc" id="L93">                .password(passwordEncoder.encode(request.getPassword()))</span>
+<span class="nc" id="L94">                .nombres(request.getNombres())</span>
+<span class="nc" id="L95">                .primerApellido(request.getPrimerApellido())</span>
+<span class="nc" id="L96">                .segundoApellido(request.getSegundoApellido())</span>
+<span class="nc" id="L97">                .role(userRole)</span>
+<span class="nc" id="L98">                .estado(UserStatus.PENDIENTE)</span>
+<span class="nc" id="L99">                .enabled(true)</span>
+<span class="nc" id="L100">                .build();</span>
+
+<span class="nc" id="L102">        User savedUser = userRepository.save(user);</span>
+<span class="nc" id="L103">        return buildAuthResponse(savedUser);</span>
+    }
+
+    public AuthResponse login(LoginRequest request) {
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        String identifier = request.getIdentifier() != null ? request.getIdentifier().trim() : &quot;&quot;;</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (identifier.isEmpty()) {</span>
+<span class="nc" id="L109">            throw new RuntimeException(&quot;Debe ingresar DNI o correo&quot;);</span>
+        }
+
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        String rawPassword = request.getPassword() != null ? request.getPassword().trim() : &quot;&quot;;</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (rawPassword.isEmpty()) {</span>
+<span class="nc" id="L114">            throw new RuntimeException(&quot;Debe ingresar la contraseña&quot;);</span>
+        }
+
+<span class="nc" id="L117">        var user = userRepository.findByDni(identifier)</span>
+<span class="nc" id="L118">                .or(() -&gt; userRepository.findByEmailIgnoreCase(identifier))</span>
+<span class="nc" id="L119">                .orElseThrow(() -&gt; new RuntimeException(&quot;Usuario no encontrado&quot;));</span>
+
+<span class="nc" id="L121">        boolean loginWithTemporaryCode = false;</span>
+
+        try {
+<span class="nc" id="L124">            authenticationManager.authenticate(</span>
+                    new UsernamePasswordAuthenticationToken(
+                            identifier,
+                            rawPassword
+                    )
+            );
+<span class="nc" id="L130">        } catch (AuthenticationException ex) {</span>
+<span class="nc" id="L131">            String normalizedCode = rawPassword.toUpperCase();</span>
+<span class="nc" id="L132">            PasswordRecoveryCode code = passwordRecoveryCodeRepository</span>
+<span class="nc" id="L133">                    .findTopByUserAndCodeAndUsedFalseOrderByCreatedAtDesc(user, normalizedCode)</span>
+<span class="nc" id="L134">                    .orElseThrow(() -&gt; new BadCredentialsException(&quot;DNI o correo o contraseña incorrectos&quot;));</span>
+
+<span class="nc bnc" id="L136" title="All 2 branches missed.">            if (code.getExpiresAt().isBefore(LocalDateTime.now())) {</span>
+<span class="nc" id="L137">                code.setUsed(true);</span>
+<span class="nc" id="L138">                passwordRecoveryCodeRepository.save(code);</span>
+<span class="nc" id="L139">                throw new RuntimeException(&quot;El código temporal expiró. Solicita uno nuevo&quot;);</span>
+            }
+
+<span class="nc" id="L142">            loginWithTemporaryCode = true;</span>
+<span class="nc" id="L143">        }</span>
+
+        // Validar que el usuario tiene estado ACTIVO
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (user.getEstado() == UserStatus.PENDIENTE) {</span>
+<span class="nc" id="L147">            throw new DisabledException(&quot;Tu cuenta está en supervisión. Por favor espera a que el administrador apruebe tu solicitud de registro.&quot;);</span>
+        }
+
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        if (user.getEstado() == UserStatus.RECHAZADO) {</span>
+<span class="nc" id="L151">            throw new DisabledException(&quot;Tu solicitud de registro ha sido rechazada. No puedes acceder al sistema.&quot;);</span>
+        }
+
+<span class="nc" id="L154">                return buildAuthResponse(user, loginWithTemporaryCode);</span>
+        }
+
+        public AuthResponse getCurrentUserProfile(String identifier) {
+<span class="nc" id="L158">                User user = userRepository.findByDni(identifier)</span>
+<span class="nc" id="L159">                                .or(() -&gt; userRepository.findByEmailIgnoreCase(identifier))</span>
+<span class="nc" id="L160">                                .orElseThrow(() -&gt; new RuntimeException(&quot;Usuario no encontrado&quot;));</span>
+
+<span class="nc" id="L162">                return buildAuthResponse(user);</span>
+        }
+
+        private AuthResponse buildAuthResponse(User user) {
+<span class="nc" id="L166">                return buildAuthResponse(user, false);</span>
+    }
+
+        private AuthResponse buildAuthResponse(User user, boolean requirePasswordChange) {
+<span class="nc" id="L170">                var jwtToken = jwtService.generateToken(user, user.getRole().getName());</span>
+
+<span class="nc" id="L172">                return AuthResponse.builder()</span>
+<span class="nc" id="L173">                                .token(jwtToken)</span>
+<span class="nc" id="L174">                                .dni(user.getDni())</span>
+<span class="nc" id="L175">                                .email(user.getEmail())</span>
+<span class="nc" id="L176">                                .nombres(user.getNombres())</span>
+<span class="nc" id="L177">                                .primerApellido(user.getPrimerApellido())</span>
+<span class="nc" id="L178">                                .segundoApellido(user.getSegundoApellido())</span>
+<span class="nc" id="L179">                                .role(user.getRole().getName())</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">                                .message(requirePasswordChange ? &quot;Código temporal válido. Debes cambiar tu contraseña para continuar.&quot; : null)</span>
+<span class="nc" id="L181">                                .requirePasswordChange(requirePasswordChange)</span>
+<span class="nc" id="L182">                                .build();</span>
+    }
+
+        public Map&lt;String, String&gt; requestPasswordRecovery(String email) {
+<span class="nc bnc" id="L186" title="All 4 branches missed.">                if (email == null || email.trim().isEmpty()) {</span>
+<span class="nc" id="L187">                        throw new RuntimeException(&quot;Debe ingresar un correo electrónico&quot;);</span>
+                }
+
+<span class="nc" id="L190">                String normalizedEmail = email.trim().toLowerCase();</span>
+<span class="nc" id="L191">                User user = userRepository.findByEmailIgnoreCase(normalizedEmail)</span>
+<span class="nc" id="L192">                                .orElseThrow(() -&gt; new RuntimeException(&quot;El correo ingresado no está registrado en el sistema&quot;));</span>
+
+<span class="nc" id="L194">                invalidatePreviousCodes(user);</span>
+
+<span class="nc" id="L196">                String temporaryCode = generateUniqueTemporaryCode();</span>
+<span class="nc" id="L197">                PasswordRecoveryCode code = PasswordRecoveryCode.builder()</span>
+<span class="nc" id="L198">                                .user(user)</span>
+<span class="nc" id="L199">                                .code(temporaryCode)</span>
+<span class="nc" id="L200">                                .expiresAt(LocalDateTime.now().plusMinutes(10))</span>
+<span class="nc" id="L201">                                .used(false)</span>
+<span class="nc" id="L202">                                .createdAt(LocalDateTime.now())</span>
+<span class="nc" id="L203">                                .build();</span>
+<span class="nc" id="L204">                passwordRecoveryCodeRepository.save(code);</span>
+
+<span class="nc" id="L206">                recoveryEmailService.sendTemporaryCode(normalizedEmail, temporaryCode);</span>
+
+<span class="nc" id="L208">                Map&lt;String, String&gt; response = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L209">                response.put(&quot;message&quot;, &quot;Te enviamos un código temporal al correo registrado. Válido por 10 minutos.&quot;);</span>
+<span class="nc" id="L210">                return response;</span>
+        }
+
+        public Map&lt;String, String&gt; confirmPasswordRecovery(String email, String temporaryCode, String newPassword) {
+<span class="nc bnc" id="L214" title="All 4 branches missed.">                if (email == null || email.trim().isEmpty()) {</span>
+<span class="nc" id="L215">                        throw new RuntimeException(&quot;Debe ingresar el correo electrónico&quot;);</span>
+                }
+<span class="nc bnc" id="L217" title="All 4 branches missed.">                if (temporaryCode == null || temporaryCode.trim().isEmpty()) {</span>
+<span class="nc" id="L218">                        throw new RuntimeException(&quot;Debe ingresar el código temporal&quot;);</span>
+                }
+<span class="nc bnc" id="L220" title="All 4 branches missed.">                if (newPassword == null || newPassword.trim().isEmpty()) {</span>
+<span class="nc" id="L221">                        throw new RuntimeException(&quot;Debe ingresar la nueva contraseña&quot;);</span>
+                }
+
+<span class="nc" id="L224">                String normalizedEmail = email.trim().toLowerCase();</span>
+<span class="nc" id="L225">                String normalizedCode = temporaryCode.trim().toUpperCase();</span>
+
+<span class="nc" id="L227">                User user = userRepository.findByEmailIgnoreCase(normalizedEmail)</span>
+<span class="nc" id="L228">                                .orElseThrow(() -&gt; new RuntimeException(&quot;El correo ingresado no está registrado en el sistema&quot;));</span>
+
+<span class="nc" id="L230">                PasswordRecoveryCode code = passwordRecoveryCodeRepository</span>
+<span class="nc" id="L231">                                .findTopByUserAndCodeAndUsedFalseOrderByCreatedAtDesc(user, normalizedCode)</span>
+<span class="nc" id="L232">                                .orElseThrow(() -&gt; new RuntimeException(&quot;El código temporal es inválido&quot;));</span>
+
+<span class="nc bnc" id="L234" title="All 2 branches missed.">                if (code.getExpiresAt().isBefore(LocalDateTime.now())) {</span>
+<span class="nc" id="L235">                        code.setUsed(true);</span>
+<span class="nc" id="L236">                        passwordRecoveryCodeRepository.save(code);</span>
+<span class="nc" id="L237">                        throw new RuntimeException(&quot;El código temporal expiró. Solicita uno nuevo&quot;);</span>
+                }
+
+<span class="nc" id="L240">                user.setPassword(passwordEncoder.encode(newPassword));</span>
+<span class="nc" id="L241">                userRepository.save(user);</span>
+
+<span class="nc" id="L243">                code.setUsed(true);</span>
+<span class="nc" id="L244">                passwordRecoveryCodeRepository.save(code);</span>
+
+<span class="nc" id="L246">                Map&lt;String, String&gt; response = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L247">                response.put(&quot;message&quot;, &quot;Contraseña actualizada correctamente&quot;);</span>
+<span class="nc" id="L248">                return response;</span>
+        }
+
+        private void invalidatePreviousCodes(User user) {
+<span class="nc" id="L252">                List&lt;PasswordRecoveryCode&gt; activeCodes = passwordRecoveryCodeRepository.findByUserAndUsedFalse(user);</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">                for (PasswordRecoveryCode activeCode : activeCodes) {</span>
+<span class="nc" id="L254">                        activeCode.setUsed(true);</span>
+<span class="nc" id="L255">                }</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">                if (!activeCodes.isEmpty()) {</span>
+<span class="nc" id="L257">                        passwordRecoveryCodeRepository.saveAll(activeCodes);</span>
+                }
+<span class="nc" id="L259">        }</span>
+
+        private String generateUniqueTemporaryCode() {
+<span class="nc" id="L262">                final String alphabet = &quot;ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&quot;;</span>
+<span class="nc" id="L263">                final SecureRandom random = new SecureRandom();</span>
+
+<span class="nc bnc" id="L265" title="All 2 branches missed.">                for (int attempt = 0; attempt &lt; 20; attempt++) {</span>
+<span class="nc" id="L266">                        StringBuilder codeBuilder = new StringBuilder(8);</span>
+<span class="nc" id="L267">                        StringBuilder source = new StringBuilder(alphabet);</span>
+
+<span class="nc bnc" id="L269" title="All 2 branches missed.">                        for (int i = 0; i &lt; 8; i++) {</span>
+<span class="nc" id="L270">                                int index = random.nextInt(source.length());</span>
+<span class="nc" id="L271">                                codeBuilder.append(source.charAt(index));</span>
+<span class="nc" id="L272">                                source.deleteCharAt(index);</span>
+                        }
+
+<span class="nc" id="L275">                        String candidate = codeBuilder.toString();</span>
+<span class="nc" id="L276">                        boolean exists = passwordRecoveryCodeRepository</span>
+<span class="nc" id="L277">                                        .existsByCodeAndUsedFalseAndExpiresAtAfter(candidate, LocalDateTime.now());</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">                        if (!exists) {</span>
+<span class="nc" id="L279">                                return candidate;</span>
+                        }
+                }
+
+<span class="nc" id="L283">                throw new RuntimeException(&quot;No se pudo generar un código temporal único. Intenta nuevamente&quot;);</span>
+        }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
