@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
+@org.springframework.test.context.ActiveProfiles("test")
 class JwtServiceTest {
 
     @Autowired
