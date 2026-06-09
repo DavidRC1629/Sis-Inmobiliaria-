@@ -90,7 +90,7 @@
             <version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
-
+        <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -181,6 +181,47 @@
                         </exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <configuration>
+                    <excludes>
+                        <!-- Entidades JPA -->
+                        <exclude>com/sisarovi/inmobiliario/model/**</exclude>
+                        <!-- DTOs -->
+                        <exclude>com/sisarovi/inmobiliario/dto/**</exclude>
+                        <!-- Clases de configuración -->
+                        <exclude>com/sisarovi/inmobiliario/config/**</exclude>
+                        <!-- Clase principal -->
+                        <exclude>com/sisarovi/inmobiliario/InmobiliarioApplication.class</exclude>
+                        <!-- Excepciones -->
+                        <exclude>com/sisarovi/inmobiliario/exception/**</exclude>
+                        <!-- Entidades de cronograma: solo datos, sin lógica de negocio -->
+                        <exclude>com/sisarovi/inmobiliario/entity/CronogramaPagoCuota.class</exclude>
+                        <exclude>com/sisarovi/inmobiliario/entity/CronogramaPagoSeparacion.class</exclude>
+                        <exclude>com/sisarovi/inmobiliario/entity/CronogramaCuota.class</exclude>
+                        <!-- Clases internas de CronogramaService (records privados) -->
+                        <exclude>com/sisarovi/inmobiliario/service/CronogramaService$TitularesInfo.class</exclude>
+                        <exclude>com/sisarovi/inmobiliario/service/CronogramaService$UbicacionLoteInfo.class</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
