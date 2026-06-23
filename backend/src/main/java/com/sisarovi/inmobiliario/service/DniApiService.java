@@ -16,7 +16,7 @@ import com.sisarovi.inmobiliario.exception.ReniecServiceUnavailableException;
 @Slf4j
 public class DniApiService {
     private static final String API_URL = "https://api.consultasperu.com/api/v1/query";
-    private static final String TOKEN = "065048186f4ff0134b0fe5d56b01a6bb649728fdd52d2a54a227395264fc8459";
+    private static final String TOKEN = "db36cac925a708ea8c44d4fd0753455b769ec30106fb2d8d08a60f622ca1770f";
 
     @Value("${reniec.enabled:true}")
     private boolean reniecEnabled;
