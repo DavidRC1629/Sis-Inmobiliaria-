@@ -1,7 +1,7 @@
+
 version: '3.8'
 
 services:
-
   mysql:
     image: mysql:8.0
     container_name: sisarovi-mysql
@@ -12,6 +12,8 @@ services:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - pipeline-net
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
       interval: 10s
@@ -33,6 +35,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    networks:
+      - pipeline-net
 
   frontend:
     build:
@@ -43,6 +47,34 @@ services:
       - "4200:80"
     depends_on:
       - backend
+    networks:
+      - pipeline-net
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    networks:
+      - pipeline-net
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    ports:
+      - "9080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock # Necesario para que Jenkins pueda lanzar contenedores
+    networks:
+      - pipeline-net
+    user: root # Para que Jenkins tenga permisos de usar Docker
+
+networks:
+  pipeline-net:
+    driver: bridge
 
 volumes:
   mysql_data:
+  jenkins_home:
