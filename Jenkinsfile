@@ -10,7 +10,7 @@ pipeline {
         REPO_URL         = 'https://github.com/DavidRC1629/Sis-Inmobiliaria-.git'
         APP_NAME         = 'sis-inmobiliaria'
         DOCKER_IMAGE     = 'sis-inmobiliaria:latest'
-        SONAR_CREDENTIAL_ID = 'key_sonarqube'
+        SONAR_CREDENTIAL_ID = 'sonar-server'
     }
 
     stages {
