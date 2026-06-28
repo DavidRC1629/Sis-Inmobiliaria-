@@ -1,4 +1,3 @@
-// 🚀 Jenkinsfile para Sis-Inmobiliaria (Spring Boot + MySQL)
 pipeline {
     agent any
 
@@ -7,14 +6,14 @@ pipeline {
     }
 
     environment {
-        REPO_URL         = 'https://github.com/DavidRC1629/Sis-Inmobiliaria-.git'
-        APP_NAME         = 'sis-inmobiliaria'
-        DOCKER_IMAGE     = 'sis-inmobiliaria:latest'
-        SONAR_CREDENTIAL_ID = 'sonar-server'
+        REPO_URL           = 'https://github.com/DavidRC1629/Sis-Inmobiliaria-.git'
+        APP_NAME           = 'sis-inmobiliaria'
+        DOCKER_IMAGE       = 'sis-inmobiliaria:latest'
+        // Cambiado a 'sonar-token' para que coincida con tu credencial creada
+        SONAR_CREDENTIAL_ID = 'sonar-token' 
     }
 
     stages {
-
         stage('📥 Checkout') {
             steps {
                 echo "Clonando proyecto desde ${REPO_URL}..."
@@ -25,7 +24,7 @@ pipeline {
 
         stage('🏗️ Build & Test') {
             steps {
-                echo 'Compilando y ejecutando pruebas con JaCoCo...'
+                echo 'Compilando y ejecutando pruebas...'
                 sh 'mvn clean install -Dmaven.test.failure.ignore=true -f backend/pom.xml'
             }
         }
@@ -34,6 +33,7 @@ pipeline {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     echo '📊 === INICIO: ANÁLISIS DE CALIDAD ==='
+                    // 'sonar-server' es el nombre configurado en Jenkins > Manage Jenkins > System
                     withSonarQubeEnv('sonar-server') {
                         sh """
                             mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155:sonar \
@@ -66,7 +66,6 @@ pipeline {
                     echo 'Desplegando contenedor...'
                     sh "docker stop ${APP_NAME} || true"
                     sh "docker rm   ${APP_NAME} || true"
-
                     sh "docker run -d --name ${APP_NAME} -p 8080:8080 ${DOCKER_IMAGE}"
                 }
             }

@@ -1,7 +1,52 @@
-C:\Users\sebas\Documents\Prueba y Despliegue de Sotfware\PROYECTO FINAL\Sis-Inmobiliaria-\backend\src\test\java\com\sisarovi\inmobiliario\AppTest.java
-C:\Users\sebas\Documents\Prueba y Despliegue de Sotfware\PROYECTO FINAL\Sis-Inmobiliaria-\backend\src\test\java\com\sisarovi\inmobiliario\service\ClienteServiceTest.java
-C:\Users\sebas\Documents\Prueba y Despliegue de Sotfware\PROYECTO FINAL\Sis-Inmobiliaria-\backend\src\test\java\com\sisarovi\inmobiliario\service\EtapaServiceTest.java
-C:\Users\sebas\Documents\Prueba y Despliegue de Sotfware\PROYECTO FINAL\Sis-Inmobiliaria-\backend\src\test\java\com\sisarovi\inmobiliario\service\LiberacionServiceTest.java
-C:\Users\sebas\Documents\Prueba y Despliegue de Sotfware\PROYECTO FINAL\Sis-Inmobiliaria-\backend\src\test\java\com\sisarovi\inmobiliario\service\LoteServiceTest.java
-C:\Users\sebas\Documents\Prueba y Despliegue de Sotfware\PROYECTO FINAL\Sis-Inmobiliaria-\backend\src\test\java\com\sisarovi\inmobiliario\service\ParcelaServiceTest.java
-C:\Users\sebas\Documents\Prueba y Despliegue de Sotfware\PROYECTO FINAL\Sis-Inmobiliaria-\backend\src\test\java\com\sisarovi\inmobiliario\service\ProjectServiceTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\AdminControllerIntegrationTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\AdminServiceIntegrationTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\AppTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\AuthControllerIntegrationTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\AuthServiceIntegrationTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\config\TestSecurityConfig.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\controller\AdminControllerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\controller\AuthControllerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\controller\ClienteControllerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\controller\DevolucionControllerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\controller\EtapaControllerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\controller\LoteControllerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\controller\MiscControllerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\controller\ParcelaControllerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\controller\ProformaControllerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\controller\ProjectControllerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\controller\TerrenoPropioControllerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\controller\UserControllerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\entity\EntidadesBasicasTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\JwtServiceTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\LoginTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\ProjectServiceIntegrationTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\service\ClienteServiceTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\service\EtapaServiceTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\service\LiberacionServiceTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\service\LoteServiceTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\service\ParcelaServiceTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\service\ProjectServiceTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\AdminServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\AppSettingAndRecoveryServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\AppSettingServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\AuthServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\ClienteServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\CronogramaServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\DevolucionServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\DniApiServiceExtendedTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\DniApiServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\EntityLogicTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\EtapaServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\GlobalExceptionHandlerTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\JwtServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\LiberacionServiceBranchTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\LiberacionServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\LoteServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\ParcelaAndProformaServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\ProjectServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\RecoveryEmailServiceExtendedTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\RecoveryEmailServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\RegistroAuditoriaServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\TerrenoPropioServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\unit\UserServiceUnitTest.java
+C:\Users\david\Videos\SisArovi - copia\backend\src\test\java\com\sisarovi\inmobiliario\UserServiceIntegrationTest.java
