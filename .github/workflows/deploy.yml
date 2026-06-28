@@ -18,15 +18,20 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "--- Entrando a la carpeta del proyecto ---"
+            echo "--- Iniciando actualización ---"
             cd /home/ec2-user/Sis-Inmobiliaria-
             
-            echo "--- Limpiando contenedores previos ---"
-            # Ahora que estamos en la carpeta, docker compose encontrará el archivo .yml
-            docker compose down
-            
-            echo "--- Trayendo actualizaciones y desplegando ---"
+            # 1. Traer el código nuevo
             git pull origin main
-            docker compose up -d --build
             
-            echo "--- ¡Despliegue finalizado con éxito! ---"
+            # 2. Entrar a la carpeta del frontend y compilar
+            # (Ajusta 'frontsisarovi' si tu carpeta se llama diferente)
+            cd frontsisarovi
+            npm install
+            npm run build
+            
+            # 3. Volver a la raíz y levantar el contenedor
+            cd ..
+            docker compose up -d --build --force-recreate
+            
+            echo "--- Despliegue finalizado ---"
