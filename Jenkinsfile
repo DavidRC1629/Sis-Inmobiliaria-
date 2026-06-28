@@ -15,7 +15,6 @@ pipeline {
         stage('Preparar Maven') {
             steps {
                 echo 'Descargando Maven usando curl...'
-                // Usamos curl -sLO para descargar el archivo en silencio y guardarlo con su nombre original
                 sh '''
                     curl -sLO https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.6/apache-maven-3.9.6-bin.tar.gz
                     tar -xzf apache-maven-3.9.6-bin.tar.gz
@@ -25,8 +24,11 @@ pipeline {
 
         stage('Build con Maven') {
             steps {
-                echo 'Compilando el proyecto...'
-                sh './apache-maven-3.9.6/bin/mvn clean install -DskipTests'
+                echo 'Entrando a la carpeta exacta del backend...'
+                // Ruta exacta basada en tu repositorio de GitHub
+                dir('Backend/inmobiliario-backend') {
+                    sh "${WORKSPACE}/apache-maven-3.9.6/bin/mvn clean install -DskipTests"
+                }
             }
         }
 
@@ -35,7 +37,10 @@ pipeline {
                 script {
                     withSonarQubeEnv('sonar-server') {
                         echo 'Ejecutando análisis de SonarQube...'
-                        sh './apache-maven-3.9.6/bin/mvn sonar:sonar'
+                        // Misma ruta exacta para SonarQube
+                        dir('Backend/inmobiliario-backend') {
+                            sh "${WORKSPACE}/apache-maven-3.9.6/bin/mvn sonar:sonar"
+                        }
                     }
                 }
             }
