@@ -15,12 +15,12 @@ pipeline {
 
         stage('Build con Maven') {
             steps {
-                echo 'Compilando el proyecto con ruta absoluta...'
+                echo 'Compilando el proyecto con la instalación oficial de maven-3.9...'
                 script {
-                    // Esto extrae la ruta exacta donde Jenkins instaló Maven 3.9
+                    // Aquí usamos el nombre exacto 'maven-3.9' que está en tu Jenkins Tools
                     def mvnHome = tool 'maven-3.9'
                     
-                    // Ejecutamos el binario directamente usando su ruta absoluta
+                    // Ejecutamos el binario usando la ruta absoluta exacta en el contenedor
                     sh "${mvnHome}/bin/mvn clean install -DskipTests"
                 }
             }
@@ -33,7 +33,7 @@ pipeline {
                     
                     // 'sonar-server' debe ser el nombre que configuraste en Manage Jenkins > System
                     withSonarQubeEnv('sonar-server') {
-                        echo 'Ejecutando análisis de SonarQube con ruta absoluta...'
+                        echo 'Ejecutando análisis de SonarQube...'
                         sh "${mvnHome}/bin/mvn sonar:sonar"
                     }
                 }
