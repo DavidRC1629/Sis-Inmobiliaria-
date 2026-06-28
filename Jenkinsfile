@@ -1,13 +1,14 @@
 pipeline {
-    // Esto le dice a Jenkins: "Usa un contenedor con Maven y Java para correr este pipeline"
-    agent {
-        docker {
-            image 'maven:3.9-eclipse-temurin-17'
-        }
+    agent any
+
+    // Esto le indica a Jenkins que busque la instalación de Maven 
+    // que configuraremos en Manage Jenkins > Tools
+    tools {
+        maven 'maven-3.9'
     }
 
     environment {
-        // Asegúrate de que este ID coincida con el que creaste en Manage Jenkins > Credentials
+        // ID de la credencial que creamos en Jenkins (Credentials > System)
         SONAR_TOKEN_ID = 'sonar-token'
     }
 
@@ -20,8 +21,8 @@ pipeline {
 
         stage('Build con Maven') {
             steps {
-                echo 'Compilando el proyecto en el contenedor...'
-                // Usamos 'sh' porque el contenedor es Linux
+                echo 'Compilando el proyecto...'
+                // Usamos sh porque Jenkins corre en un entorno Linux (contenedor)
                 sh 'mvn clean install -DskipTests'
             }
         }
@@ -29,7 +30,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // 'sonar-server' debe coincidir con el nombre configurado en Manage Jenkins > System
+                    // 'sonar-server' es el nombre que diste en Manage Jenkins > System
                     withSonarQubeEnv('sonar-server') {
                         echo 'Ejecutando análisis de SonarQube...'
                         sh 'mvn sonar:sonar'
@@ -47,7 +48,7 @@ pipeline {
             echo '¡Éxito! El código se compiló y analizó correctamente.'
         }
         failure {
-            echo 'Hubo un error. Revisa la consola.'
+            echo 'Hubo un error en la construcción o el análisis. Revisa la consola.'
         }
     }
 }
