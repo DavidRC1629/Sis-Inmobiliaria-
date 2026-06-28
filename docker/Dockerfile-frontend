@@ -1,0 +1,23 @@
+# ====== Etapa 1: Construcción (Angular) ======
+FROM node:18 AS build
+WORKDIR /app
+
+# Copiar archivos para dependencias
+COPY package*.json ./
+RUN npm install
+
+# Copiar todo el código y construir
+COPY . .
+RUN npm run build
+
+# ====== Etapa 2: Servidor (Nginx) ======
+FROM nginx:alpine
+
+# Copiar los archivos compilados a Nginx (Ajusta 'frontsisarovi' a tu nombre de proyecto en dist/)
+COPY --from=build /app/dist/frontsisarovi /usr/share/nginx/html
+
+# Copiar la configuración de Nginx que creaste para eliminar la caché
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
