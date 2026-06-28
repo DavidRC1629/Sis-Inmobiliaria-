@@ -20,16 +20,21 @@ jobs:
           script: |
             echo "Conexión exitosa al servidor AWS EC2"
             
-            # 1. Entrar a la carpeta de tu proyecto en el servidor
+            # 1. Entrar a la carpeta del proyecto
             cd /home/ec2-user/Sis-Inmobiliaria-
             
             # 2. Descargar los últimos cambios
-            echo "Descargando últimas actualizaciones desde GitHub..."
+            echo "Descargando actualizaciones desde GitHub..."
             git pull origin main
             
-            # 3. Apagar y reconstruir los contenedores
-            echo "Reconstruyendo e iniciando contenedores de Docker..."
-            docker-compose down
-            docker-compose up -d --build
+            # 3. Reconstruir y levantar contenedores
+            # --build: Fuerza la reconstrucción de la imagen si cambió el Dockerfile
+            # --force-recreate: Reemplaza el contenedor viejo aunque no haya cambiado la configuración
+            echo "Reconstruyendo e iniciando contenedores..."
+            docker-compose up -d --build --force-recreate
+            
+            # 4. Limpieza: Borrar imágenes huérfanas (dangling images) para ahorrar espacio
+            echo "Limpiando imágenes antiguas..."
+            docker image prune -f
             
             echo "¡Despliegue finalizado con éxito en AWS!"
