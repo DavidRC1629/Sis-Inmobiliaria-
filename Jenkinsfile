@@ -1,14 +1,8 @@
 pipeline {
     agent any
 
-    // Esto le indica a Jenkins que busque la instalación de Maven 
-    // que configuraremos en Manage Jenkins > Tools
-    tools {
-        maven 'maven-3.9'
-    }
-
     environment {
-        // ID de la credencial que creamos en Jenkins (Credentials > System)
+        // ID de la credencial que creamos en Jenkins
         SONAR_TOKEN_ID = 'sonar-token'
     }
 
@@ -21,19 +15,26 @@ pipeline {
 
         stage('Build con Maven') {
             steps {
-                echo 'Compilando el proyecto...'
-                // Usamos sh porque Jenkins corre en un entorno Linux (contenedor)
-                sh 'mvn clean install -DskipTests'
+                echo 'Compilando el proyecto con ruta absoluta...'
+                script {
+                    // Esto extrae la ruta exacta donde Jenkins instaló Maven 3.9
+                    def mvnHome = tool 'maven-3.9'
+                    
+                    // Ejecutamos el binario directamente usando su ruta absoluta
+                    sh "${mvnHome}/bin/mvn clean install -DskipTests"
+                }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // 'sonar-server' es el nombre que diste en Manage Jenkins > System
+                    def mvnHome = tool 'maven-3.9'
+                    
+                    // 'sonar-server' debe ser el nombre que configuraste en Manage Jenkins > System
                     withSonarQubeEnv('sonar-server') {
-                        echo 'Ejecutando análisis de SonarQube...'
-                        sh 'mvn sonar:sonar'
+                        echo 'Ejecutando análisis de SonarQube con ruta absoluta...'
+                        sh "${mvnHome}/bin/mvn sonar:sonar"
                     }
                 }
             }
