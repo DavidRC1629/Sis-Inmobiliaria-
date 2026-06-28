@@ -18,23 +18,15 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "--- Iniciando despliegue forzado ---"
+            echo "--- Entrando a la carpeta del proyecto ---"
             cd /home/ec2-user/Sis-Inmobiliaria-
             
-            # 1. Traer cambios
+            echo "--- Limpiando contenedores previos ---"
+            # Ahora que estamos en la carpeta, docker compose encontrará el archivo .yml
+            docker compose down
+            
+            echo "--- Trayendo actualizaciones y desplegando ---"
             git pull origin main
+            docker compose up -d --build
             
-            # 2. Forzar la reconstrucción total de las imágenes
-            # --no-cache: Obliga a Docker a ignorar lo viejo y bajar todo desde cero
-            # --pull: Asegura que si hay una imagen nueva en el registro, la use
-            echo "Reconstruyendo contenedores desde cero..."
-            docker-compose build --no-cache
-            
-            # 3. Reemplazar contenedores antiguos
-            echo "Reemplazando contenedores..."
-            docker-compose up -d --force-recreate
-            
-            # 4. Eliminar imágenes antiguas "huérfanas"
-            docker image prune -f
-            
-            echo "--- Despliegue completado con éxito ---"
+            echo "--- ¡Despliegue finalizado con éxito! ---"
