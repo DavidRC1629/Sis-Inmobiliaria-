@@ -1,4 +1,3 @@
-
 version: '3.8'
 
 services:
@@ -22,8 +21,8 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/Dockerfile-backend
     container_name: sisarovi-backend
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sisarovi_dbb?createDatabaseIfNotExist=true
@@ -40,8 +39,8 @@ services:
 
   frontend:
     build:
-      context: ./frontsisarovi
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/Dockerfile-frontend
     container_name: sisarovi-frontend
     ports:
       - "4200:80"
@@ -66,10 +65,10 @@ services:
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock # Necesario para que Jenkins pueda lanzar contenedores
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - pipeline-net
-    user: root # Para que Jenkins tenga permisos de usar Docker
+    user: root
 
 networks:
   pipeline-net:
