@@ -64,13 +64,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
       error: () => this.loadSummaryWithCache()
     });
 
-    this.refreshService.refresh$.pipe(takeUntil(this.destroy$)).subscribe(() => this.loadSummary());
+    // BUCLE DETENIDO: Esta línea causaba la recarga infinita al detectar cambios
+    // this.refreshService.refresh$.pipe(takeUntil(this.destroy$)).subscribe(() => this.loadSummary());
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  // ... (el resto de tus métodos permanecen igual)
 
   get isAdmin(): boolean {
     return this.currentUser?.role?.name === 'ROLE_ADMIN';
@@ -178,7 +181,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadSummaryWithCache(): void {
-    // Primero mostrar datos en caché para evitar 0s iniciales
     const cached = {
       projects: this.projectService.getCachedProjectsSnapshot().length,
       clients: this.clienteService.getProjectSummariesSnapshot().reduce((sum, item) => sum + Number(item?.cantidadClientes || 0), 0),
@@ -189,7 +191,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.summaryCards = cached;
     this.loadingSummary = true;
     
-    // Luego cargar datos frescos desde el servidor
     this.loadSummary();
   }
 
@@ -216,7 +217,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.loadingSummary = false;
       },
       error: () => {
-        // Mantener los datos en caché si hay error en lugar de resetear a 0
         this.loadingSummary = false;
       }
     });
