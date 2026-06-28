@@ -14,10 +14,10 @@ pipeline {
 
         stage('Preparar Maven') {
             steps {
-                echo 'Descargando Maven manualmente para saltarnos los bugs de Jenkins...'
-                // Descargamos Maven 3.9.6 y lo descomprimimos directamente en la carpeta de trabajo
+                echo 'Descargando Maven usando curl...'
+                // Usamos curl -sLO para descargar el archivo en silencio y guardarlo con su nombre original
                 sh '''
-                    wget -q -nc https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.6/apache-maven-3.9.6-bin.tar.gz || true
+                    curl -sLO https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.6/apache-maven-3.9.6-bin.tar.gz
                     tar -xzf apache-maven-3.9.6-bin.tar.gz
                 '''
             }
@@ -26,7 +26,6 @@ pipeline {
         stage('Build con Maven') {
             steps {
                 echo 'Compilando el proyecto...'
-                // Usamos el Maven que acabamos de descargar
                 sh './apache-maven-3.9.6/bin/mvn clean install -DskipTests'
             }
         }
@@ -36,7 +35,6 @@ pipeline {
                 script {
                     withSonarQubeEnv('sonar-server') {
                         echo 'Ejecutando análisis de SonarQube...'
-                        // Usamos el mismo Maven descargado para SonarQube
                         sh './apache-maven-3.9.6/bin/mvn sonar:sonar'
                     }
                 }
