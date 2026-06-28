@@ -18,23 +18,23 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "Conexión exitosa al servidor AWS EC2"
-            
-            # 1. Entrar a la carpeta del proyecto
+            echo "--- Iniciando despliegue forzado ---"
             cd /home/ec2-user/Sis-Inmobiliaria-
             
-            # 2. Descargar los últimos cambios
-            echo "Descargando actualizaciones desde GitHub..."
+            # 1. Traer cambios
             git pull origin main
             
-            # 3. Reconstruir y levantar contenedores
-            # --build: Fuerza la reconstrucción de la imagen si cambió el Dockerfile
-            # --force-recreate: Reemplaza el contenedor viejo aunque no haya cambiado la configuración
-            echo "Reconstruyendo e iniciando contenedores..."
-            docker-compose up -d --build --force-recreate
+            # 2. Forzar la reconstrucción total de las imágenes
+            # --no-cache: Obliga a Docker a ignorar lo viejo y bajar todo desde cero
+            # --pull: Asegura que si hay una imagen nueva en el registro, la use
+            echo "Reconstruyendo contenedores desde cero..."
+            docker-compose build --no-cache
             
-            # 4. Limpieza: Borrar imágenes huérfanas (dangling images) para ahorrar espacio
-            echo "Limpiando imágenes antiguas..."
+            # 3. Reemplazar contenedores antiguos
+            echo "Reemplazando contenedores..."
+            docker-compose up -d --force-recreate
+            
+            # 4. Eliminar imágenes antiguas "huérfanas"
             docker image prune -f
             
-            echo "¡Despliegue finalizado con éxito en AWS!"
+            echo "--- Despliegue completado con éxito ---"
